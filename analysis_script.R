@@ -24,7 +24,7 @@ data <- bind_rows(data1, data2, data3)
 data<-data %>%
   mutate(site=case_when(str_detect(Sample.Name, "CL")~"clio",
                         str_detect(Sample.Name, "KN")~"knight",
-                        TRUE~'control'))%>%
+                        TRUE~'control')) %>%
   filter(data$Task != "STANDARD") #remove standards
 NAs <- which(is.na(data$Quantity))
 data$Quantity[NAs] <- 0
@@ -40,8 +40,9 @@ boxplot <- ggplot(data=data, aes(x=site,y=log(Quantity+1), fill=Target.Name))+
   ylab("eDNA concentration (copies/μL)")+
   scale_x_discrete(limits=c("clio", "knight", "control"))+
   scale_fill_discrete(name="Species")#, labels=c("Atlantic salmon calicivirus", "Cutthroat trout virus-2",
-                                                "Erythrocytic necrosis virus","P. salmonis", "Atlantic salmon calcivirus","Atlantic salmon", 
-                                               "Candidatus S. salmonis", "T. finnmarkense", "T. maritimum"))
+                                                #"Erythrocytic necrosis virus","P. salmonis", "Atlantic salmon calcivirus","Atlantic salmon", 
+                                               #"Candidatus S. salmonis", "T. finnmarkense", "T. maritimum"))
+
 boxplot
 
 scatter <- ggplot(data=data, aes(x=site, y=Quantity, color=Target.Name))+
@@ -62,48 +63,60 @@ scatter
 ####Hurdle model####
 #subset data for only Atlantic salmon
 sasa <- subset(data, data$Target.Name=="sasa" & data$site!="control")
+sasa$logquant <- log(sasa$Quantity+1)
 sasa$non_zero <- ifelse(sasa$Quantity>0, 1, 0)
-sasa.plot <- ggplot(data=sasa, aes(x=site, y=Quantity))+
+sasa.plot <- ggplot(data=sasa, aes(x=site, y=Quantity, colour=site))+
   geom_boxplot()
 
-####Fit models to each treatment separately####
+sasa.clio <- subset(sasa, site == "clio")
+sasa.knight <- subset(sasa, site == "knight")
 
 #Model non-zero data using a binomial:
-m1 <- glm(non_zero ~ site, data = sasa, family=binomial(link="logit"))
+m.bin.clio <- glm(non_zero ~ 1, data = sasa.clio, family=binomial(link="logit"))
+m.bin.knight <- glm(non_zero ~ 1, data = sasa.knight, family=binomial(link="logit"))
 
 #Model zero data using a gamma:
-m2 <- glm(Quantity ~ site, data = subset(sasa, non_zero == 1), family=Gamma(link="log"))
+m.gam.clio <- glm(Quantity ~ 1, data = subset(sasa.clio, non_zero == 1), family=Gamma(link="log"))
+m.gam.knight <- glm(Quantity ~ 1, data = subset(sasa.knight, non_zero == 1), family=Gamma(link="log"))
 
 #Extract model coefficients
-m1.coef <- plogis(coef(m1)) #binomial coefficients are on logit scale so we inverse them
-m2.coef <- exp(coef(m2)) #gamma coefficients are on a log scale so we exponentiate them
-#Extract model predictions
-pred1 <- predict(m1, se=TRUE, type="link")
-pred2 <- predict(m2, se=TRUE, type="link")
+m.bin.clio.coef <- plogis(coef(m.bin.clio)) #binomial coefficients are on logit scale so we inverse them
+m.bin.knight.coef <- plogis(coef(m.bin.knight)) #binomial coefficients are on logit scale so we inverse them
+m.gam.clio.coef <- exp(coef(m.gam.clio)) #gamma coefficients are on a log scale so we exponentiate them
+m.gam.knight.coef <- exp(coef(m.gam.knight)) #gamma coefficients are on a log scale so we exponentiate them
 
 #We combine binomial and gamma models by adding means on log scale and re-exponentiating them
-pred <- exp(log(m1.coef) + log(m2.coef))
+pred.clio <- exp(log(m.bin.clio.coef) + log(m.gam.clio.coef))
+pred.knight <- exp(log(m.bin.knight.coef) + log(m.gam.knight.coef))
 
-sasa.plot + geom_hline(yintercept=pred)
+sasa.plot + geom_hline(yintercept=pred.clio) + geom_hline(yintercept=pred.knight)
 
 ####Calculate confidence intervals on our model prediction####
 # We are going to use a parametric bootstrapping approach using the boot function in the boot package
-
 #First we create a function specifying how to generate random variables to hand the boot function
 hurdle.fun <- function(data, i) {
   dat.boot <- data[i, ]
-  m1 <- glm(non_zero ~ site, data = dat.boot, family=binomial(link="logit"))
-  m2 <- glm(Quantity ~ site, data = subset(dat.boot, non_zero == 1), family=Gamma(link="log"))
-  bin_coef <- plogis(coef(m1)[[1]])
-  gamma_coef <- exp(coef(m2)[[1]])
+  m1 <- glm(non_zero ~ 1, data = dat.boot, family=binomial(link="logit"))
+  m2 <- glm(Quantity ~ 1, data = subset(dat.boot, non_zero == 1), family=Gamma(link="log"))
+  bin_coef <- plogis(coef(m1))
+  gamma_coef <- exp(coef(m2))
   exp(log(bin_coef) + log(gamma_coef))
 }
 
 #Generate bootstraps and bootstrapped confidence intervals
-b <- boot(sasa, hurdle.fun, R = 500)
-b.ci <- boot.ci(b, type = "bca")
+set.seed(1)
+b.clio <- boot(sasa.clio, hurdle.fun, R = 1000)
+b.knight <- boot(sasa.knight, hurdle.fun, R = 1000)
+b.ci.clio <- boot.ci(b.clio, type = "bca")
+b.ci.knight <- boot.ci(b.knight, type = "bca")
 
-sasa.plot +
-  geom_hline(yintercept = pred) +
-  geom_hline(yintercept = b.ci$bca[c(4:5)],
-             colour = "darkgrey")
+preds <- data.frame(site = c("clio", "knight"),
+                      meanpred = c(pred.clio[[1]], pred.knight[[1]]),
+                      lower = c(b.ci.clio$bca[[4]], b.ci.knight$bca[[4]]),
+                      upper = c(b.ci.clio$bca[[5]], b.ci.knight$bca[[5]]))
+
+ggplot() + 
+  geom_jitter(data=sasa, aes(x=site, y=Quantity, colour=site))+ 
+  geom_point(data=preds, aes(x=site, y=meanpred))+
+  geom_errorbar(data=preds, aes(x=site, ymin=lower, ymax=upper))
+
