@@ -1,33 +1,12 @@
 ####Analysis of Clio channel and knight inlet data collected summer 2024#
-#Last updated November 6, 2024
+#Last updated November 7, 2024
 library("tidyverse")
 library("MASS")
 library("vcdExtra")  
 library("boot")
 
-
-####Data preparation####
-data1 <- read.csv("~/Documents/GitHub/clio/clio.csv", skip=42)
-data2 <- read.csv("~/Documents/GitHub/clio/clio2.csv", skip=42)
-data3 <- read.csv("~/Documents/GitHub/clio/clio3.csv", skip=42)
-
-data1$Quantity <- as.numeric(data1$Quantity) #Make quantities numeric
-data2$Quantity <- as.numeric(data2$Quantity) #Make quantities numeric
-data3$Quantity <- as.numeric(data3$Quantity) #Make quantities numeric
-data1$Quantity.SD <- as.numeric(data1$Quantity.SD) #Make quantity SDs numeric
-data2$Quantity.SD <- as.numeric(data2$Quantity.SD) #Make quantity SDs numeric
-data3$Quantity.SD <- as.numeric(data3$Quantity.SD) #Make quantity SDs numeric
-
-data <- bind_rows(data1, data2, data3)
-
-
-data<-data %>%
-  mutate(site=case_when(str_detect(Sample.Name, "CL")~"clio",
-                        str_detect(Sample.Name, "KN")~"knight",
-                        TRUE~'control')) %>%
-  filter(data$Task != "STANDARD") #remove standards
-NAs <- which(is.na(data$Quantity))
-data$Quantity[NAs] <- 0
+#Load clean data
+source("~/Documents/GitHub/clio/scripts/data_preparation.R")
 
 ####Visualization####
 boxplot <- ggplot(data=data, aes(x=site,y=log(Quantity+1), fill=Target.Name))+
