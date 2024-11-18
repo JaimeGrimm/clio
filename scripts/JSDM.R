@@ -1,5 +1,6 @@
 #Joint species distribution modeling in HMSC
-# Last updated November 8, 2024
+#Clio and knight inlet data collected in summer 2024
+# Last updated November 18, 2024
 
 library(tidyr)
 library(lme4)
