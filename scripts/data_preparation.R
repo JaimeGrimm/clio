@@ -20,9 +20,9 @@ data<-data %>%
   mutate(site=case_when(str_detect(Sample.Name, "CL")~"clio",
                         str_detect(Sample.Name, "KN")~"knight",
                         TRUE~'control')) %>%
-  filter(data$Task != "STANDARD") #remove standards
-NAs <- which(is.na(data$Quantity))
-data$Quantity[NAs] <- 0 
+  filter(Task != "STANDARD", Target.Name != "ascv" & Target.Name != "ctv-2")  #remove standards 
+  NAs <- which(is.na(data$Quantity))
+  data$Quantity[NAs] <- 0 
 
 #Add sequential order of samples:
 regexp <- "[[:digit:]]+"
@@ -40,3 +40,4 @@ data$seq[data$Sample.Name=="CT0884"] <- 0
 data$seq[data$Sample.Name=="CT0837"] <- 8.25
 data$seq[data$Sample.Name=="CT0931"] <- 8.5
 data$seq[data$Sample.Name=="CT0917"] <- 25
+
