@@ -101,6 +101,7 @@ for (i in 1:length(uniqueTarget)){
 #What about with species pooled?
 adf.test(gamdat$mean)
 #not stationary
+
 overalldiff <- c(diff(gamdat$mean, differences=1))
 adf.test(overalldiff)
 #stationary with first order differences
@@ -138,13 +139,14 @@ pacf(overalldiff, plot=TRUE)
 #Gamma hurdle with site being a predictor of zero/not zeros process and autocorrelation
 gamdat$seq <- as.numeric(gamdat$seq)
 
-m4 <- brm(bf(mean ~ site + (1 + site|Target.Name), hu ~ site, autocor = ~arma(time = seq, gr = Target.Name:Sample.Name, p = 1, q = 1, cov=TRUE)), 
+m4 <- brm(bf(mean ~ site + (1 + site|Target.Name), hu ~ site, autocor = ~ar(time = seq, 
+            gr = Target.Name:Sample.Name, p = 1, cov=TRUE)), 
           data = gamdat, family = hurdle_gamma(), chain = 2, cores = 2)
 m4df <- tidy(m4) 
 
 #What proportion of our data are zeros?
-hu_intercept <- m4df %>% filter(term == "hu_(Intercept)") %>% pull(estimate)
-hu_site <- m4df %>% filter(term == "hu_siteknight") %>% pull(estimate)
+hu_knight <- m4df %>% filter(term == "hu_(Intercept)") %>% pull(estimate)
+hu_clio <- m4df %>% filter(term == "hu_siteknight") %>% pull(estimate)
 pp_check(m4)
 plot(conditional_effects(m4), points=TRUE) 
 
