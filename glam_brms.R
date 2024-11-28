@@ -9,6 +9,10 @@ library(broom)
 library(broom.mixed) 
 library(emmeans)
 library(tseries)
+library(jtools)
+library(gghalves)
+library(ggthemes)
+
 
 ####Load and clean data----
 source("~/Documents/GitHub/clio/scripts/data_preparation.R")
@@ -37,20 +41,18 @@ ggplot(data = data, aes(x=Quantity))+
   
 #Boxplots by species
 ggplot(data = data, aes(x=site, y=Quantity))+
-  geom_boxplot()+
-  facet_wrap(~ Target.Name)
+  geom_half_point(aes(color=Target.Name), side="l")+
+  geom_half_boxplot(aes(fill=Target.Name), side="r")+
+  facet_wrap(~ Target.Name, scales = "free")
 
-####Set sampling regime and priors----
-#Priors
-
-
-#### Model 1 ----
+#### Some exploratory models ----
+# **Model 1 
 #Count data
 #Random effect by species at intercept
 fit <- brm(Quantity ~ site + (1|Target.Name), data = data.ct, family = zero_inflated_poisson("log"), chain = 2,
            cores = 2)
 
-#### Model 2 ----
+# ** Model 2 
 #Count data
 #Random effect by species at slope and intercept
 m2 <- brm(Quantity ~ site + (site|Target.Name), data = data.ct, family = zero_inflated_poisson("log"), chain = 2,
@@ -61,7 +63,7 @@ m2df <- tidy(m2)
 #Posterior predictive check:
 pp_check(m2) #Not great
 
-#### Model 3 ----
+#** Model 3 
 #Gamma hurdle without defining the binary hurdle part (to build intuition)
 m3 <- brm(bf(Quantity ~ site + (site|Target.Name), hu ~ 1), data = data, family = hurdle_gamma(),
           chain = 2, cores = 2)
@@ -113,7 +115,7 @@ adf.test(overalldiff)
 ggplot(data=gamdat)+
   geom_point(aes(x=seq, y=diff2, col=Target.Name, group=Target.Name))+
   geom_line(aes(x=seq, y=diff2, col=Target.Name, group=Target.Name))+
-  facet_wrap(~ Target.Name)
+  facet_wrap(~ Target.Name, scales = "free")
 
 #Check if differences are stationary. 
 for (i in 1:length(uniqueTarget)){
@@ -135,27 +137,54 @@ for (i in 1:length(uniqueTarget)){
 acf(overalldiff, plot=TRUE)
 pacf(overalldiff, plot=TRUE)
 
-#### Model 4 ----
+#### Full model ----
+chains <- 4
+iter <- 4000
+warmup <- 1000
+seed <- 1234
+
 #Gamma hurdle with site being a predictor of zero/not zeros process and autocorrelation
 gamdat$seq <- as.numeric(gamdat$seq)
-
 m4 <- brm(bf(mean ~ site + (1 + site|Target.Name), hu ~ site, autocor = ~ar(time = seq, 
             gr = Target.Name:Sample.Name, p = 1, cov=TRUE)), 
-          data = gamdat, family = hurdle_gamma(), chain = 2, cores = 2)
+          data = gamdat, family = hurdle_gamma(), chains = chains, iter = iter, warmup = warmup,
+          seed = seed)
 m4df <- tidy(m4) 
 
 #What proportion of our data are zeros?
-hu_knight <- m4df %>% filter(term == "hu_(Intercept)") %>% pull(estimate)
-hu_clio <- m4df %>% filter(term == "hu_siteknight") %>% pull(estimate)
+hu_clio <- m4df %>% filter(term == "hu_(Intercept)") %>% pull(estimate)
+hu_knight <- m4df %>% filter(term == "hu_siteknight") %>% pull(estimate)
+hu_control <- m4df %>% filter(term=="hu_sitecontrol") %>% pull(estimate)
 pp_check(m4)
-plot(conditional_effects(m4), points=TRUE) 
 
-####Model diagnostics ----
+#**Plots of conditional effects----
+#This is for both model components (non-zero and zeros)
+cond.data <- plot(conditional_effects(m4, re_formula = NULL), plot=FALSE)[[1]]$data 
+
+ggplot()+
+  geom_jitter(data=gamdat, aes(x=site, y=mean, color=Target.Name), width=0.2, alpha=0.4)+
+  geom_point(data = cond.data, aes(x=effect1__, y=estimate__), size=2, color="black")+
+  geom_errorbar(data= cond.data, aes(x= effect1__, ymin=lower__, ymax=upper__),color="black", width=0.5)+
+  labs(x="Site", y="Predicted mean DNA concentration", subtitle = "Combined parts of the model (\"mu\" and \"hu\")")+
+  theme_bw()
+
+#This is for just the hurdle components
+hu.data <- plot(conditional_effects(m4, dpar="hu", re_formula = NULL), plot=FALSE)[[1]]$data
+ggplot()+
+#  geom_jitter(data=gamdat, aes(x=site, y=mean, color=Target.Name), width=0.2, alpha=0.4)+
+  geom_point(data = hu.data, aes(x=effect1__, y=estimate__), size=2, color="black")+
+  geom_errorbar(data= hu.data, aes(x= effect1__, ymin=lower__, ymax=upper__),color="black", width=0.5)+
+  labs(x="Site", y="Predicted mean DNA concentration", subtitle = "Hurdle part of the model (\"hu\") only")+
+  theme_bw()
+
+#**Model diagnostics ----
 mcmc_plot(m4, type="trace")
-mcmc_plot(m4, type="pairs")
+mcmc_plot(m4, type="pairs", variable=variables(m4)[1:6])
 mcmc_plot(m4, type="dens")
 
 ggplot()+
   geom_jitter(data=gamdat, aes(x=site, y=mean, colour=site)) +
   geom_point(aes(x=gamdat$site, y=m4df$estimate))#+
   geom_errorbar(data=preds, aes(x=site, ymin=lower, ymax=upper))
+  
+#**
