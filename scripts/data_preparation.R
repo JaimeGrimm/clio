@@ -36,8 +36,8 @@ data <- data %>%
   #arrange(seq)
 
 #Manually assign seq values for controls  
-data$seq[data$Sample.Name=="CT0884"] <- 0
-data$seq[data$Sample.Name=="CT0837"] <- 8.25
-data$seq[data$Sample.Name=="CT0931"] <- 8.5
-data$seq[data$Sample.Name=="CT0917"] <- 25
+data$seq[data$Sample.Name=="CT0884"] <- 0 #beginning of day 1
+data$seq[data$Sample.Name=="CT0837"] <- 8.25 #end of day 1
+data$seq[data$Sample.Name=="CT0931"] <- 8.5 #beginning of day 2
+data$seq[data$Sample.Name=="CT0917"] <- 25 #end of day 2
 
