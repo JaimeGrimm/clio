@@ -182,7 +182,7 @@ drawsr <- spread_draws(m4,
                       r_Target.Name__hu[condition, term])
 drawsr <- drawsr %>% mutate(mean.adj = exp(r_Target.Name)) %>% 
                      mutate(hu.adj = 1 - plogis(r_Target.Name__hu)) %>% 
-                     mutate(mh = mean.adj * hu.adj) # %>% 
+                     mutate(mh = mean.adj * hu.adj)  %>% 
                      select(c(condition, term, mh, .chain, .iteration, .draw)) %>% 
                      pivot_wider(names_from = term, values_from = mh)
 
@@ -493,3 +493,204 @@ plot.all.species.ame
 
 #Combine plots
 ggarrange(plot.all.species, plot.all.species.ame, nrow=1)
+
+
+
+#Random (species) effects
+drawsr <- spread_draws(m4,
+                       r_Target.Name[condition, term],
+                       r_Target.Name__hu[condition, term])
+notrans <- drawsr %>% pivot_wider(names_from = term, values_from = c(r_Target.Name, r_Target.Name__hu))
+
+drawsr <- drawsr %>% mutate(mean.adj = exp(r_Target.Name)) %>% 
+  mutate(hu.adj = 1 - plogis(r_Target.Name__hu)) %>% 
+  mutate(mh = mean.adj * hu.adj)  %>% 
+  select(c(condition, term, mh, .chain, .iteration, .draw)) %>% 
+  pivot_wider(names_from = term, values_from = mh)
+
+
+##
+assays <- unique(drawsr$condition)
+temp <- list()
+for (i in 1:length(assays)){  
+  temp[[i]] <- drawsr %>% filter(condition==assays[i]) %>% 
+    pivot_wider(names_from = c(term, condition), values_from = c(r_Target.Name, r_Target.Name__hu))
+  }
+
+for (j in 1: length(temp)){
+  bind[[j]] <- bind_cols(drawsf, temp[[j]])
+}
+assay_draws <- matrix(NA)
+for (l in 1:7){
+  attach(bind[[l]])
+  assay_draws[l] <- exp(b_Intercept + bind[[l]][,26]) * 
+    (1 - plogis(b_hu_Intercept + bind[[l]][,29]))
+  detach(bind[[l]])
+}
+
+exp(b_Intercept + bind[[l]][,26]) * 
+  (1 - plogis(b_hu_Intercept + bind[[l]][,29]))
+
+attach(sasabind)
+drawsf$sasa_control <- exp(b_Intercept + r_Target.Name_sitecontrol) * 
+  (1 - plogis(b_hu_Intercept + r_Target.Name__hu_sitecontrol))
+
+drawsf$sasa_clio <- exp(b_Intercept + r_Target.Name_sitecontrol + b_clio + r_Target.Name_Intercept) * 
+  (1 - plogis(b_hu_Intercept + b_hu_clio + r_Target.Name__hu_Intercept + r_Target.Name__hu_sitecontrol))
+
+drawsf$sasa_knight <- exp(b_Intercept + b_knight + r_Target.Name_sitecontrol + r_Target.Name_siteknight) *
+  (1 - plogis(b_hu_Intercept + b_hu_knight + r_Target.Name__hu_sitecontrol + r_Target.Name__hu_siteknight))
+detach(sasabind)
+
+
+#Atlantic salmon
+draws.longf %>% 
+  filter(name == "sasa_control"| name == "sasa_clio" | name == "sasa_knight") %>% 
+  ggplot(aes(x=value, y=0, fill=name, alpha = 0.5)) +
+  stat_halfeye(aes(color = name)) +
+  theme_bw()+
+  labs(x = "Atlantic salmon eDNA density", 
+       title = "mu and hu part of the model", y = NULL)+
+  guides(alpha = "none")+
+  coord_cartesian(xlim=c(0,350))
+
+hypothesis(draws.longf, "sasa_clio > sasa_knight")
+
+#All species
+#Pull fixed effects
+species_effects <- full_join(drawsr, drawsf) %>% 
+  pivot_wider(names_from = term, values_from = c(r_Target.Name, r_Target.Name__hu)) #%>% 
+group_by(condition) %>% 
+  mutate(full_control = exp(b_Intercept + r_Target.Name_sitecontrol) * 
+           (1 - plogis(b_hu_Intercept + r_Target.Name__hu_sitecontrol))) %>% 
+  mutate(full_clio = exp(b_Intercept + r_Target.Name_sitecontrol + b_clio + r_Target.Name_Intercept) * 
+           (1 - plogis(b_hu_Intercept + r_Target.Name__hu_sitecontrol + b_hu_clio + r_Target.Name__hu_Intercept))) %>% 
+  mutate(full_knight = exp(b_Intercept + b_knight + r_Target.Name_sitecontrol + r_Target.Name_siteknight) *
+           (1 - plogis(b_hu_Intercept + b_hu_knight + r_Target.Name__hu_sitecontrol + r_Target.Name__hu_siteknight))) %>% 
+  mutate(spratio = full_clio/full_knight) %>% 
+  select(condition, .chain, .iteration, .draw, B_control, B_clio, B_knight, full_control,
+         full_clio, full_knight, spratio, ratio) %>%
+  ungroup()
+pivot_longer(cols = -c(condition, .chain, .iteration, .draw))
+
+species_effects %>% 
+  filter(condition == "sasa") %>% 
+  ggplot(aes(x = spratio, alpha = 0.3, fill = after_stat(x > 1))) +
+  labs(x = "Clio:Knight", y = "Species") +
+  stat_halfeye(color = "grey20") +
+  coord_cartesian(xlim=c(0,100)) +
+  guides(alpha = "none")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  scale_fill_manual(values = c("grey70", "red")) +
+  scale_y_discrete(labels = c(Te_mar = "T. maritimum", Te_fin = "T. finnmarkense", sch = "Cand. S. salmonis",
+                              sasa = "Atlantic salmon", pisck_sal = "P. salmonis", pa_ther = "P. theridion",
+                              env = "Erythrocytic necrosis virus"))
+
+#Full model posteriors with species effects
+species_effects %>% 
+  ggplot() +
+  geom_density(aes(x=ratio), bw=0.1) +
+  #  geom_density(aes(x = spratio, fill = condition))+
+  theme_bw()+
+  labs(y = "Posterior density", x = "Clio:Knight", y= NULL, fill = "Site")+
+  #geom_vline(xintercept = 1, linetype = "dashed") +
+  guides(alpha = "none") +
+  coord_cartesian(xlim=c(0,5)) 
+theme(legend.position = c(0.8, 0.8), legend.background = element_rect(fill = alpha("white", 0)))
+
+
+
+
+
+
+
+
+
+#**Plots of conditional effects----
+#This is for both model components (non-zero and zeros)
+cond.data <- plot(conditional_effects(m4, re_formula = NULL), plot=FALSE)[[1]]$data 
+
+ggplot()+
+  geom_jitter(data=gamdat, aes(x=site, y=mean, color=Target.Name), width=0.2, alpha=0.4)+
+  geom_point(data = cond.data, aes(x=effect1__, y=estimate__), size=2, color="black")+
+  geom_errorbar(data= cond.data, aes(x= effect1__, ymin=lower__, ymax=upper__),color="black", width=0.5)+
+  labs(x="Site", y="Predicted mean DNA concentration", subtitle = "Combined parts of the model (\"mu\" and \"hu\")")+
+  theme_bw()
+
+#This is for just the hurdle components
+hu.data <- plot(conditional_effects(m4, dpar="hu", re_formula = NULL), plot=FALSE)[[1]]$data
+ggplot()+
+  #  geom_jitter(data=gamdat, aes(x=site, y=mean, color=Target.Name), width=0.2, alpha=0.4)+
+  geom_point(data = hu.data, aes(x=effect1__, y=estimate__), size=2, color="black")+
+  geom_errorbar(data= hu.data, aes(x= effect1__, ymin=lower__, ymax=upper__),color="black", width=0.5)+
+  labs(x="Site", y="Predicted mean DNA concentration", subtitle = "Hurdle part of the model (\"hu\") only")+
+  theme_bw()
+
+#**Model diagnostics ----
+mcmc_plot(m4, type="trace")
+mcmc_plot(m4, type="pairs", variable=variables(m4)[1:8])
+mcmc_plot(m4, type="pairs", variable=variables(m4)[9:20])
+mcmc_plot(m4, type="dens")
+
+ggplot()+
+  geom_jitter(data=gamdat, aes(x=site, y=mean, colour=site)) +
+  geom_point(aes(x=gamdat$site, y=m4df$estimate))#+
+geom_errorbar(data=preds, aes(x=site, ymin=lower, ymax=upper))
+
+###
+
+#Full model posteriors
+#drawsf$B_control <- exp(drawsf$b_Intercept) * (1 - plogis(drawsf$b_hu_Intercept))
+drawsf$B_clio <- exp(drawsf$b_Intercept) * (1 - plogis(drawsf$b_hu_Intercept))
+drawsf$B_knight <- exp(drawsf$b_Intercept + drawsf$b_SiteKnight) * (1 - plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
+
+drawsf$ratio <- drawsf$B_clio/drawsf$B_knight
+
+#Hurdle posteriors
+#drawsf$HU_control <- (plogis(drawsf$b_hu_Intercept))
+drawsf$HU_clio <- (plogis(drawsf$b_hu_Intercept))
+drawsf$HU_knight <- (plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
+
+draws.longf <- drawsf %>%  pivot_longer(everything())
+
+#Posterior plots----
+#Clio:Knight
+draws.longf %>% 
+  filter(name == "ratio") %>% 
+  ggplot(aes(x=value, y=0, alpha = 0.5, color = "grey40")) +
+  stat_halfeye(color = "grey20") +
+  theme_bw()+
+  coord_cartesian(xlim=c(0,10))+
+  labs(x = "Clio:Knight", y = NULL)+
+  guides(fill = "none", alpha = "none")+
+  geom_vline(xintercept=1)
+
+hypothesis(fit, "Intercept > SiteKnight")
+#Clio is greater than knight at 86% probability
+
+#Full model
+draws.longf %>% 
+  filter(name == "B_clio"| name == "B_knight") %>% # | name == "B_control") %>% 
+  ggplot(aes(x=value, alpha = 0.5, fill=name)) +
+  #stat_halfeye(color = "grey20", scale = 0.9) +
+  stat_slabinterval(show_interval = FALSE) +
+  theme_bw()+
+  labs(x = "eDNA concentration", y= NULL, fill = "Site")+
+  guides(alpha = "none") +
+  coord_cartesian(xlim=c(0,5)) +
+  scale_fill_discrete(labels = c(B_clio = "Clio channel", B_knight = "Knight inlet", B_control ="Control"), 
+                      type = c("#1b9e77", "#d95f02", "#7570b3"))+
+  theme(legend.position = c(0.8, 0.8), legend.background = element_rect(fill = alpha("white", 0)))
+
+#Hurdle component only
+draws.longf %>% 
+  filter(name == "HU_clio"| name == "HU_knight") %>% 
+  ggplot(aes(x=value, y=name,  alpha = 0.5, color = "grey40")) +
+  stat_slabinterval(color="grey20") +
+  theme_bw()+
+  labs(x = "Proportion of zeros in data", y = NULL)+
+  guides(alpha = "none") +
+  scale_y_discrete(labels = c(HU_clio = "Clio channel", HU_knight = "Knight inlet", HU_control ="Control"))
+
