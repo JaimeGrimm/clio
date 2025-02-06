@@ -1,0 +1,29 @@
+date,region,site_num,Seq,site_name,sample_lat,sample_latm,sample_long,sample_longm,dd_lat,dd_long,num_filters,total_volume,temp,salinity,turbidity,filter_start,filter_end,filter time,weather,tide,notes
+08-Jun-24,,Start of day control,0,,,,,,,,1,5,NA,NA,NA,9:06,9:20,0:14,,,filter tube 3 tested
+08-Jun-24,Clio,1,1,,50°37.851,,126°20.483,,,,3,15,9.8,29.2,3,9:50,9:59,0:09,"sunny, calm","low, slack",
+08-Jun-24,Knight,2,2,,50°38.000,,126°19.171,,,,3,15,10.3,28.5,2.5,10:16,10:24,0:08,"sunny, calm",low ,
+08-Jun-24,Clio,3,3,,50°37.824,,126°20.171,,,,3,15,11.8,27.1,2.5,10:45,10:57,0:12,"sunny, calm","low, rising",
+08-Jun-24,Knight,4,4,,50°38.286,,126°20.436,,,,3,15,10.6,28.2,2,11:12,11:21,0:09,"sunny, wind","low, rising",
+08-Jun-24,Clio,5,5,,50°37.805,,126°20.463,,,,3,14.5,11.2,28.1,2.9,11:35,11:46,0:11,"sunny, wind","low, rising",filter -3883 only got 4.5L
+08-Jun-24,Knight,6,6,,50°37.760,,126°21.434,,,,3,14.5,10.7,28.8,3.5,12:03,12:14,0:11,"sunny, wind","low, rising",filter -5053 only got 4.5L
+08-Jun-24,Clio,7,7,,50°37.714,,126°20.428,,,,3,14,11.3,28.2,2.5,12:28,12:39,0:11,"sunny, wind",mid ,filter -0577 only got 4L
+08-Jun-24,Knight,8,8,,50°37.818,,126°19.264,,,,3,15,11,27.4,3,12:53,13:02,0:09,"sunny, wind",mid ,
+08-Jun-24,,End of day control,9,,,,,,,,,,,,,,,0:00,,,
+09-Jun-24,,Start of day control,10,,,,,,,,1,5,,,,7:50,7:56,0:06,,,
+09-Jun-24,Knight,9,11,,50°38.817,,126°28.999,,,,3,14,10.4,28.9,2.5,8:15,8:24,0:09,"fog, calm","mid, falling",filter -0916 only got 4L
+09-Jun-24,Knight,10,12,,50°38.729,,126°18.965,,,,3,15,9.7,29,3,8:46,8:54,0:08,"fog, calm","mid, falling",
+09-Jun-24,Knight,11,13,,50°38.3634,,126°17.747,,,,3,15,9.9,28.8,3,9:08,9:17,0:09,"fog, calm","mid, falling",
+09-Jun-24,Clio,12,14,,50°37.834,,126°20.024,,,,3,15,10.8,28.9,2.8,9:45,9:54,0:09,"fog, calm","mid, falling",
+09-Jun-24,Knight,13,15,,50°38.226,,126°22.056,,,,3,15,10.3,28.7,2.5,10:13,10:20,0:07,rain,"low, slack",
+09-Jun-24,Clio,14,16,,50°37.689,,126°20.616,,,,3,15,10.4,27.9,3,10:35,10:45,0:10,"rain, calm","low, slack",
+09-Jun-24,Knight,15,17,,50°38.666,,126°19.962,,,,3,15,11.1,28.2,,11:00,11:10,0:10,"sun, wind","low, slack",
+09-Jun-24,Clio,16,18,,50°37.691,,126°20.424,,,,3,15,11.2,28,2.5,11:27,11:36,0:09,"fog, calm","low, rising",
+09-Jun-24,Knight,17,19,,50°37.894,,126°17.103,,,,3,14,10.4,28.8,3,11:58,12:09,0:11,"fog, calm","low, rising",filter -0145 only got 4L
+09-Jun-24,Clio,18,20,,50°37.698,,126°20.248,,,,4,14,11.2,28.1,2.8,12:31,12:45,0:14,"fog, wind",mid,filter -0384 only got 4 L and filter was swapped
+09-Jun-24,Knight,19,21,,50°37.748,,126°23.555,,,,3,15,10.7,28.7,2.5,13:29,13:40,0:11,"cloudy, wind","mid, rising",
+09-Jun-24,Clio,20,22,,50°37.710,,126°20.664,,,,3,14.5,10.5,28.7,2.5,13:58,14:11,0:13,"cloudy, breezy","mid, rising",filter -2433 only got 4.5L
+09-Jun-24,Clio,21,23,,50°37.684,,126°20.336,,,,3,15,10.5,28.8,2.5,14:39,14:46,0:07,"cloudy, breezy","mid, rising",
+09-Jun-24,Clio,22,24,,50°37.688,,126°20.522,,,,3,15,10.6,28.8,2.2,15:01,15:14,0:13,"cloudy, windy","high, rising",
+09-Jun-24,Knight,23,25,,50°38.453,,126°24.810,,,,4,15,10.7,28.9,3.2,15:36,15:51,0:15,"cloudy, windy","high, rising",replaced filter -4430 with filter -4026
+09-Jun-24,Clio,24,26,,50°37.661,,126°20.527,,,,3,15,10.3,29,2.5,16:12,16:20,0:08,"cloudy, windy","high, rising",
+09-Jun-24,,End of day control,27,,,,,,,,1,5,,,,17:43,17:47,0:04,,,tube 2 tested
