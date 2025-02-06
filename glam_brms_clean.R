@@ -19,96 +19,22 @@ library(egg)
 library(scales)
 library(ggtext)
 library(repr)
+library(marginaleffects)
 options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 
 #Load and prepare data ----
-# using readr's read_csv for better typing
-data1 <- read_csv("./clio.csv", skip = 42, show_col_types = FALSE)
-data2 <- read_csv("./clio2.csv", skip = 42, show_col_types = FALSE)
-data3 <- read_csv("./clio3.csv", skip = 42, show_col_types = FALSE)
+source("~/Documents/GitHub/clio/scripts/data_preparation.R")
 
-data <- bind_rows(data1, data2, data3) %>%
-  # simplify column names:
-  rename(Target = `Target Name`, Sample = `Sample Name`, Amp = `Amp Status`) %>%
-  # add `Site` column:
-  mutate(Site = case_when(
-    str_detect(Sample, "CL")~"Clio",
-    str_detect(Sample, "KN")~"Knight",
-    TRUE~'Control')) %>%
-  # remove standards and extraneous samples:
-  filter(
-    Task != "STANDARD",
-    Target != "ascv",
-    Target != "ctv-2",
-    Sample != "EB0108",
-    Sample != "EB0108.1",
-    Sample != "CT0804",
-    Sample != "qPCRBlank",
-    Sample != "qPCRblank",
-    Sample != "Messedup",
-    Sample != "water") %>%
-  # grab sequence numbers:
-  mutate(Sequence = as.numeric(substr(str_extract(Sample, "[[:digit:]]+"), 1, 2))) %>%
-  # controls were run at the beginning & end of each day; increment second day's sequence number by 2:
-  mutate(Sequence = if_else(Sequence < 9, Sequence, Sequence + 2)) %>%
-  # grab only the columns we need:
-  select(Sample, Sequence, Site, Target, Quantity, Amp)
-
-# Manually assign sequence numbers for controls:
-data$Sequence[data$Sample=="CT0884"] <- 0 #beginning of day 1
-data$Sequence[data$Sample=="CT0837"] <- 9 #end of day 1
-data$Sequence[data$Sample=="CT0931"] <- 10 #beginning of day 2
-data$Sequence[data$Sample=="CT0917"] <- 27 #end of day 2
-# -
-
-# ### adding a `PrevConc` covariate
-#
-# There's some fear that previously-taken samples may 'contaminate' the subsequent samples (i.e., autocorrelated noise in sample sequence).
-# To accomodate this possible effect in the model, we add a covariate corresponding to the (nan-)mean of the previous samples' observed concentrations.
-# (We need to average over the triplicated samples in the previous sequence.)
-#
-# We also drop some samples at this point:
-#
-# + `Control` samples, whose fitted parameters are of no interest to us
-# + the `KN1922` sample targeting "Te_mar", which is a significant outlier
-## JG note - Jan 6. Rather than just removing the outlier at this point, I'm removing all failed amplifications that still have a non-zero quantity associated with them
-# +
-data$Conc <- if_else(is.na(data$Quantity), 0, data$Quantity)
-
-# check out avg. DNA concentration against sequence number
-data %>% group_by(Target, Sequence) %>%
-  summarise(MeanConc=mean(Conc, na.rm = TRUE), .groups = "keep") %>%
-  ggplot(aes(x=Sequence, y=MeanConc, color=Target)) + geom_line() + geom_point() + scale_y_continuous(trans = "log1p")
-
-# +
-data$PrevConc = 0
-
-for (t in unique(data$Target)) {
-  for (s in 1:max(data$Sequence)) {
-    pq <- mean(
-      na.omit(filter(data, Sequence == s - 1, Target == t)$Quantity)
-    )
-    data$PrevConc[(data$Sequence == s) & (data$Target == t)] <- if_else(is.na(pq), 0, pq)
-  }
-}
-
-data$PrevConc[data$Sequence == 10] <- 0  #decontaminated before start of day 2
-
-data_nc <- data %>%
-  filter(Site != "Control") %>% # filter out control trials, for fitting
-  #filter(!(Sample == "KN1922" & Target == "Te_mar")) %>% # drop the outlier sequence
-  filter(!(Amp == "No Amp" & Conc > 0)) %>% 
-  mutate(Conc = Conc / 100, PrevConc = PrevConc / 100) # scale for easier sampling
-
+data_nc <- data %>% filter(Site != "Control")
 #Plot data ----
 #Histograms by species
-data_nc %>% ggplot(aes(x=Conc, fill = Target))+
+data_nc %>% ggplot(aes(x=Conc*100, fill = Target))+
   geom_histogram(bins = 10) +
   facet_grid(Site ~ Target, scales = "free") +
   theme_bw() + theme(legend.position = "none")
 
 #Boxplots by species
-data_nc %>% ggplot(aes(x=Target, y=Conc))+
+data_nc %>% ggplot(aes(x=Target, y=Conc*100))+
   geom_half_point(aes(color=Target), side="l", alpha = 0.2,
                   transformation = PositionIdentity)+
   geom_half_boxplot(aes(fill=Target), side="r")+
@@ -122,11 +48,10 @@ data_nc %>% ggplot(aes(x=Target, y=Conc))+
                               env = "Erythrocytic necrosis virus"), guide = guide_axis(angle = 45))
 
 
-
 #Model fitting ----
 formula <- bf(
-    Conc ~ Site + PrevConc + (1 + Site | Target),
-    hu ~ Site + PrevConc + (1 + Site | Target)
+    Conc ~ Site + PrevConc + (1 + Site | Target) + (1|Sample),
+    hu ~ Site + PrevConc + (1 + Site | Target) + (1|Sample)
 )
 
 family <- hurdle_gamma()
@@ -135,16 +60,21 @@ family <- hurdle_gamma()
 default_prior(formula, data = data_nc, family = family)
 # -
 
-fit <- brm(
+fit1 <- brm(
     formula, data = data_nc, family = family,
     chains = 6, iter = 4000, warmup = 2000, seed = 1,
     core = 6, control = list(max_treedepth = 10, adapt_delta = 0.9),
     prior = c(set_prior("normal(0, 100)", class = "b")),  # add a wide prior to the coefficients
     silent = 0
 )
-summary(fit)
+summary(fit1)
+
+tidyfit <- tidy(fit1)
 
 #Conditional effects ----
+
+conditional_effects(fit, "Site")
+hypothesis(envfit, "Site > 0")
 
 conditional_effects(fit, "Site", method = "posterior_linpred")
 
@@ -152,7 +82,25 @@ fit %>% emmeans(~ Site, epred = FALSE) %>% contrast("pairwise")
 
 hypothesis(fit, "SiteKnight > 0")
 
-conditional_effects(fit, "PrevConc", method = "posterior_linpred")
+# For the effect of previous concentration
+#Conditional effects method
+conditional_effects(fit, "PrevConc")
+
+#Marginal effects predictions method
+conditional_pc <- predictions(
+  fit, 
+  newdata = datagrid(PrevConc = data_nc$PrevConc), 
+  by = "PrevConc", 
+  re_formula = NA
+) %>% 
+  posterior_draws() 
+conditional_pc <- as.data.frame(conditional_pc)
+conditional_pc %>% ggplot(aes(x=temp, y = estimate)) +
+  geom_line()+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.3)+
+  theme_bw() +
+  ylab("Effect size") +
+  xlab("eDNA concentration of previous sample (copies/μL")
 
 hypothesis(fit, "PrevConc > 0")
 
@@ -165,14 +113,14 @@ pairs(fit,
 )
 
 pairs(fit,
-      variable = c("b_Intercept", "b_SiteKnight", "r_Target\\[.*,Intercept\\]"),
+      variable = c("b_hu_Intercept", "b_hu_SiteKnight", "r_Target__hu\\[.*,Intercept\\]"),
       regex = TRUE,
       diag_fun="dens",
       off_diag_fun="hex",
 )
 
 pairs(fit,
-      variable = c("b_Intercept", "b_SiteKnight", "r_Target\\[.*,SiteKnight\\]"),
+      variable = c("b_hu_Intercept", "b_hu_SiteKnight", "r_Target__hu\\[.*,SiteKnight\\]"),
       regex = TRUE,
       diag_fun="dens",
       off_diag_fun="hex",
@@ -185,7 +133,7 @@ pairs(fit,
 pp_check(fit, ndraws = 20) + scale_x_continuous(trans = "log1p") + theme_bw()
 
 #Extract draws----
-drawsf <- spread_draws(fit, 
+drawsf <- spread_draws(fit1, 
   b_Intercept,
   b_SiteKnight,
   b_PrevConc,
@@ -199,13 +147,16 @@ drawsf$B_knight <- exp(drawsf$b_Intercept + drawsf$b_SiteKnight) * (1 - plogis(d
 
 drawsf$ratio <- drawsf$B_clio/drawsf$B_knight
 
+#Global prev conc
+drawsf$PC <- exp(drawsf$b_PrevConc + drawsf$b_Intercept) * (1-plogis(drawsf$b_hu_Intercept + drawsf$b_hu_PrevConc))
+
 #Hurdle posteriors
 #drawsf$HU_control <- (plogis(drawsf$b_hu_Intercept))
 drawsf$HU_clio <- (plogis(drawsf$b_hu_Intercept))
 drawsf$HU_knight <- (plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
 drawsf$HU_ratio <- drawsf$HU_clio/drawsf$HU_knight
 
-draws.longf <- drawsf %>%  pivot_longer(everything())
+draws.longf <- drawsf %>% pivot_longer(everything())
 
 #Posterior plots----
 #Clio:Knight
@@ -231,7 +182,7 @@ draws.longf %>%
   theme_bw()+
   labs(x = "eDNA concentration", y= NULL, fill = "Site")+
   guides(alpha = "none") +
-  coord_cartesian(xlim=c(0,5)) +
+  coord_cartesian(xlim=c(0,15)) +
   scale_fill_discrete(labels = c(B_clio = "Clio channel", B_knight = "Knight inlet", B_control ="Control"), 
                       type = c("#1b9e77", "#d95f02", "#7570b3"))+
   theme(legend.position = c(0.8, 0.8), legend.background = element_rect(fill = alpha("white", 0)))
@@ -309,27 +260,43 @@ ggplot(data = fit_draws_knight) +
   geom_density(aes(x=1 / exp(b_SiteKnight + r_Target)), size = 1) +
   xlim(0, 5) +
   #coord_cartesian(xlim=c(0, 500)) +
-  labs(x = "Percent increase in expected DNA concentration at Clio vs. Knight", y = "Density") + theme_bw() + theme(legend.position = "bottom")
+  labs(x = "Ratio of expected DNA concentration at Clio vs. Knight", y = "Density") + theme_bw() + theme(legend.position = "bottom")
 
 # mu and hu species effects
-newdata <- expand_grid(
+newdata1 <- expand_grid(
   Site = c("Clio", "Knight"),
-  Target = sort(unique(data$Target)),
+  Target = sort(unique(data_nc$Target)),
   PrevConc = 0,
+  Sample = unique(data_nc$Sample)
 )
-epred <- epred_draws(fit, newdata=newdata)
+epred1 <- epred_draws(fit1, newdata=newdata)
 
 
-epred <- epred %>% pivot_wider(id_cols = c(Target, .draw), names_from = Site, values_from = .epred) %>% 
-        mutate(ratio = Clio/Knight)
+epred1 <- epred1 %>% pivot_wider(id_cols = c(Target, .draw, Sample), names_from = Site, values_from = .epred) %>% 
+        mutate(ratio = Clio/Knight) %>% 
+        mutate(fullname = case_when(Target == "Te_mar" ~ "T. maritimum", 
+                                    Target == "Te_fin" ~ "T. finnmarkense", 
+                                    Target == "sch" ~ "Cand. S. salmonis",
+                                    Target == "sasa" ~ "Atlantic salmon", 
+                                    Target == "pisck_sal" ~ "P. salmonis", 
+                                    Target == "pa_ther" ~ "P. theridion",
+                                    Target == "env" ~ "ENV")
+        )
 
-ggplot(data = epred) +
-  geom_density(aes(x= ratio, color=Target), size = 0.75, trim = FALSE) +
-  geom_density(aes(x=ratio), size = 0.5, linetype = 2, trim = FALSE) +
+ggplot(data = epred1) +
+  geom_density(aes(x= ratio, color=fullname), size = 0.75, trim = FALSE) +
+  #geom_density(aes(x=ratio), size = 0.5, linetype = 2, trim = FALSE) +
   xlim(-1, 15) +
-  labs(x = "Ratio of posterior distributions of DNA concentration at \n Clio vs. Knight", y = "Density") + 
+  labs(x = "Ratio of expected DNA concentration at \n Clio vs. Knight", y = "Density") + 
   theme_bw() + 
-  theme(legend.position = "bottom") 
+  theme(legend.position = "bottom", legend.title = element_text(size=14),
+        legend.text = element_text(size=14),
+        axis.text=element_text(size=12),
+        axis.title=element_text(size=14))+
+  labs(color = "Target species")+
+  geom_vline(xintercept=1, linetype = 2)
+  
+  
   
 
                
