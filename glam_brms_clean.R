@@ -147,26 +147,25 @@ drawsf$B_knight <- exp(drawsf$b_Intercept + drawsf$b_SiteKnight) * (1 - plogis(d
 
 drawsf$ratio <- drawsf$B_clio/drawsf$B_knight
 
-#Global prev conc
-drawsf$PC <- exp(drawsf$b_PrevConc + drawsf$b_Intercept) * (1-plogis(drawsf$b_hu_Intercept + drawsf$b_hu_PrevConc))
-
 #Hurdle posteriors
 #drawsf$HU_control <- (plogis(drawsf$b_hu_Intercept))
 drawsf$HU_clio <- (plogis(drawsf$b_hu_Intercept))
 drawsf$HU_knight <- (plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
 drawsf$HU_ratio <- drawsf$HU_clio/drawsf$HU_knight
 
+drawsf <- drawsf %>% filter(B_knight != 0)
+
 draws.longf <- drawsf %>% pivot_longer(everything())
 
 #Posterior plots----
 #Clio:Knight
-draws.longf %>% 
+ratio_noenv <- draws.longf %>% 
   filter(name == "ratio") %>% 
   ggplot(aes(x=value, y=0, alpha = 0.5, color = "grey40")) +
   stat_halfeye(color = "grey20") +
-  theme_bw()+
+  theme_bw(base_size = 16)+
   coord_cartesian(xlim=c(0,10))+
-  labs(x = "Proportion of zeros in DNA concentration, Clio:Knight", y = NULL)+
+  labs(x = "Clio:Knight", y = NULL)+
   guides(fill = "none", alpha = "none")+
   geom_vline(xintercept=1, linetype =2)
 
@@ -188,7 +187,7 @@ draws.longf %>%
   theme(legend.position = c(0.8, 0.8), legend.background = element_rect(fill = alpha("white", 0)))
 
 #Hurdle component only
-draws.longf %>% 
+hurdle_noenv<- draws.longf %>% 
   filter(name == "HU_clio"| name == "HU_knight") %>% 
   ggplot(aes(x=value, y=name,  alpha = 0.5, color = "grey40")) +
   stat_slabinterval(color="grey20") +
@@ -283,15 +282,16 @@ epred1 <- epred1 %>% pivot_wider(id_cols = c(Target, .draw, Sample), names_from 
                                     Target == "env" ~ "ENV")
         )
 
-ggplot(data = epred1) +
+sp_noenv <- ggplot(data = epred1) +
   geom_density(aes(x= ratio, color=fullname), size = 0.75, trim = FALSE) +
   #geom_density(aes(x=ratio), size = 0.5, linetype = 2, trim = FALSE) +
   xlim(-1, 15) +
-  labs(x = "Ratio of expected DNA concentration at \n Clio vs. Knight", y = "Density") + 
+  ylim(0, 1.6) +
+  labs(x = NULL, y = NULL, title = "Without environmental variables") +
+  #labs(x = "Ratio of expected DNA concentration at \n Clio vs. Knight", y = "Density") + 
   theme_bw() + 
-  theme(legend.position = "bottom", legend.title = element_text(size=14),
-        legend.text = element_text(size=14),
-        axis.text=element_text(size=12),
+  theme(legend.position = "none") +
+  theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   labs(color = "Target species")+
   geom_vline(xintercept=1, linetype = 2)
