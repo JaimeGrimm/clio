@@ -1,3 +1,11 @@
+# Binary files
+figures/
+deprecated/
+
+# Cache files
+.DS_Store
+Thumbs.db
+
 .Rproj.user
 .Rhistory
 .RData
