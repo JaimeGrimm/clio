@@ -1,7 +1,10 @@
-####Analysis of Clio channel and knight inlet data collected summer 2024#
-#Bayesian regression models using stan. The goal is to model species distributions with species ID as a random effect
+####Analysis of Clio channel and knight inlet data collected summer 2024
+#Written by Jaime Grimm
+#Bayesian regression models using stan. 
+#The goal is to model species distributions as a hierarchical model with species 
+  #IDs as random effects
 #Created November 18, 2024
-#Last updated February 7, 2025
+#Last updated July 22, 2025
 
 #Housekeeping ----
 library(tidyr)
@@ -26,7 +29,8 @@ options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 #Load and prepare data ----
 source("./scripts/data_preparation.R")
 
-data_nc <- data %>% filter(Site != "Control")
+data_nc <- data %>% filter(Site != "Control") #remove controls
+
 #Plot data ----
 #Histograms by species
 data_nc %>% ggplot(aes(x=Conc*100, fill = Target))+
@@ -87,7 +91,8 @@ hypothesis(fit1, "SiteKnight > 0")
 #Conditional effects method
 conditional_effects(fit1, "PrevConc")
 
-#Marginal effects predictions method
+#Marginal effects predictions method - checking that this produces the same result
+  #as the conditional effect function
 conditional_pc <- predictions(
   fit1, 
   newdata = datagrid(PrevConc = data_nc$PrevConc), 
@@ -103,9 +108,11 @@ conditional_pc %>% ggplot(aes(x=PrevConc, y = estimate)) +
   ylab("Estimated eDNA concentration (copies/μL)") +
   xlab("eDNA concentration of previous sample (copies/μL)")
 
+#If we were to deviate from Bayesian norms, is the effect of the PrevConc on the
+  #subsequent sample concentration "significantly" greater than 0?
 hypothesis(fit1, "PrevConc > 0")
 
-#Pairs plots ----
+#Pairs plots to check for correlation and divergent transitions----
 pairs(fit,
       variable = c("shape", "b_Intercept", "b_SiteKnight", "b_PrevConc", "b_hu_Intercept"),
       diag_fun="dens",
@@ -127,7 +134,9 @@ pairs(fit,
 )
 
 # The fixed effect and shape parameter pair plots look fine.
-# The random effects appear totally degenerate with the fixed effect (not unexpected, we're effectively fitting for the effect of site in four different places in this model!) and thus with eachother.
+# The random effects appear totally degenerate with the fixed effect 
+  #(not unexpected, we're effectively fitting for the effect of site in four 
+  #different places in this model!) and thus with eachother.
 
 # a quick posterior predictive check, to make sure we're near the right track
 pp_check(fit1, ndraws = 20)  + scale_x_continuous(trans = "log1p") + theme_bw()
@@ -141,7 +150,7 @@ drawsf <- spread_draws(fit1,
   b_hu_SiteClio,
   b_hu_PrevConc)
 
-#Keep it simple for global means/hu
+#Keep it simple for global means/hu.
 drawsf$B_clio <- exp(drawsf$b_Intercept) * (1 - plogis(drawsf$b_hu_Intercept))
 drawsf$B_knight <- exp(drawsf$b_Intercept + drawsf$b_SiteKnight) * (1 - plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
 
@@ -260,105 +269,3 @@ ggplot(data = foo) +
   labs(color = "Target species")+
   geom_vline(xintercept=1, linetype = 2)
   
-  
-#Calculate odds ratios----
-#Odds ratio is the strength of association between two events. 
-
-##Odds ratio - full model
-
-odds.knight<- exp(drawsf$b_Intercept)*exp(drawsf$b_hu_Intercept)
-odds.clio <- (exp(drawsf$b_SiteClio)*exp(drawsf$b_hu_SiteClio))
-#Probability of eDNA at Knight
-
-##Odds ratio - hurdle component
-
-odds.clio.hu <- exp(drawsf$b_hu_SiteClio)
-odds.knight.hu <- exp(drawsf$b_hu_Intercept)
-
-odds <- data.frame(par = c("clio.full", "knight.full", "clio.hu", "knight.hu"),
-                  mean = c(mean(odds.clio), mean(odds.knight), mean(odds.clio.hu), mean(odds.knight.hu)),
-                  lower = c(qi(odds.clio)[,1], qi(odds.knight)[,1], qi(odds.clio.hu)[,1], qi(odds.knight.hu)[,1]),
-                  upper = c(qi(odds.clio)[,2], qi(odds.knight)[,2], qi(odds.clio.hu)[,2], qi(odds.knight.hu)[,2]))
-
-odds.plot <- odds %>% filter(par == "clio.full") %>% 
-ggplot()+
-  geom_point(aes(x=mean, y=par))+
-  geom_errorbar(aes(xmin = lower, xmax = upper, y=par))+
-  xlab("Odds ratio")+
-  geom_vline(xintercept = 1, lty=2, col = "red")
-  
-#Full model species' odds ratios
-#View random effect-level coefficients
-fixed <- tidy(fit1, effects = "fixed", conf.int=TRUE, conf.level=TRUE)
-ran <- tidy(fit1, effects = "ran_vals", conf.int = TRUE, conf.level = 0.95) %>% 
-  filter(group == "Target" | group == "Target__hu") 
-
-##To calculate species-specific odds ratios:
-#exp(Fixed intercept + ran_sp) * exp(Fixed intercept_hu + Ran_sp_hu)
-#We want to visualize the incremental change in DNA concentration from being at Clio Channel
-#Pull out random effects for each area and mu and hu model components
-#Pull out fixed effects
-clio_hu_effect <- fixed %>% filter(term == "hu_SiteClio")
-clio_mu_effect <- fixed %>% filter(term == "SiteClio")
-knight_hu_effect <- fixed %>% filter(term == "hu_(Intercept)")
-knight_hu_effect <- fixed %>% filter(term == "(Intercept)")
-
-ran_kn_hu <- ran %>% filter(group == "Target__hu" & term == "(Intercept)")
-ran_kn_mu <- ran %>% filter(group == "Target" & term == "(Intercept)")
-ran_clio_hu <- ran %>% filter(group == "Target__hu" & term == "SiteClio")
-ran_clio_mu <- ran %>% filter(group == "Target" & term == "SiteClio")
-
-#Andrew's suggestion - hurdle only
-odds <- exp(clio_hu_effect$estimate) 
-spp_odds <- exp(clio_hu_effect$estimate + ran_clio_hu$estimate)
-spp_odds_lower <- exp(clio_hu_effect$conf.low + ran_clio_hu$conf.low)
-spp_odds_upper <- exp(clio_hu_effect$conf.high + ran_clio_hu$conf.high)
-
-odds_df <- data.frame(mean = 1/odds,
-                      lower = 1/exp(clio_hu_effect$conf.low),
-                      upper = 1/exp(clio_hu_effect$conf.high))
-spp_odds_df <- data.frame(target = c(ran$level[1:7]),
-                      mean = 1/c(as.numeric(spp_odds)),
-                      lower = 1/c(as.numeric(spp_odds_lower)),
-                      upper = 1/c(as.numeric(spp_odds_upper)))
-spp_odds_df <- spp_odds_df %>% filter(target !="Te_fin",  target != "Te_mar")
-
-ggplot() +
-  geom_point(data = spp_odds_df, aes(x=mean, y=target))+
-  geom_point(data = odds_df, aes(x=mean, y = 0))+
-  geom_errorbar(data = odds_df, aes(xmin = lower, xmax = upper, y= 0))+
-  geom_errorbar(data = spp_odds_df, aes(xmin = lower, xmax = upper, y=target))+
-  xlab("Odds ratio")+
-  geom_vline(xintercept = 1, lty=2, col = "red")+
-  scale_x_log10()
-
-#Full model
-#exp(Fixed intercept + ran_sp) * exp(Fixed intercept_hu + Ran_sp_hu)
-odds <- exp(clio_hu_effect$estimate) * exp(clio_mu_effect$estimate)
-odds.lower <- exp(clio_hu_effect$conf.low) * exp(clio_mu_effect$conf.low)
-odds.upper <- exp(clio_hu_effect$conf.high) * exp(clio_mu_effect$conf.high)
-
-spp_odds <- exp(clio_hu_effect$estimate + ran_clio_hu$estimate) * 
-  exp(clio_mu_effect$estimate + ran_clio_mu$estimate)
-spp_odds_lower <- exp(clio_hu_effect$conf.low + ran_clio_hu$conf.low) * 
-  exp(clio_mu_effect$conf.low + ran_clio_mu$conf.low)
-spp_odds_upper <- exp(clio_hu_effect$conf.high + ran_clio_hu$conf.high) * 
-  exp(clio_mu_effect$conf.high + ran_clio_mu$conf.high)
-
-odds_df <- data.frame(mean = odds,
-                      lower = odds.lower,
-                      upper = odds.upper)
-spp_odds_df <- data.frame(target = c(ran$level[1:7]),
-                          mean = c(as.numeric(spp_odds)),
-                          lower = c(as.numeric(spp_odds_lower)),
-                          upper = c(as.numeric(spp_odds_upper)))
-spp_odds_df <- spp_odds_df %>% filter(target !="Te_fin",  target != "Te_mar")
-
-ggplot() +
-  geom_point(data = spp_odds_df, aes(x=mean, y=target))+
-  geom_point(data = odds_df, aes(x=mean, y = 0))+
-  geom_errorbar(data = odds_df, aes(xmin = lower, xmax = upper, y= 0))+
-  geom_errorbar(data = spp_odds_df, aes(xmin = lower, xmax = upper, y=target))+
-  xlab("Odds ratio")+
-  geom_vline(xintercept = 1, lty=2, col = "red")+
-  scale_x_log10()
