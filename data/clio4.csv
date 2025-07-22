@@ -1,0 +1,97 @@
+﻿Block Type,96-Well 0.1-mL Block,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Background is expired ,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Background performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye ABY is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye ABY performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye FAM is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye FAM performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye JUN is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye JUN performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye NED is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye NED performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye ROX is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye ROX performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye SYBR is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye SYBR performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye TAMRA is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye TAMRA performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye VIC is expired,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Pure Dye VIC performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration ROI is expired ,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration ROI performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Uniformity is expired ,Yes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Calibration Uniformity performed on,08-19-2022,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Chemistry,TAQMAN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Date Created,2025-05-12 14:43:28 PM PDT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment Barcode,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment File Name,D:\Users\INSTR-ADMIN\Desktop\Jaime\2025-05-12_JGCLIO_SasaTmarTfin2JS.eds,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment Name,2025-05-12_115613,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment Run End Time,2025-05-12 21:12:32 PM PDT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Experiment Type,Standard Curve,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Instrument Name,272313530,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Instrument Serial Number,272313530,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Instrument Type,QuantStudio™ 3 System,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Passive Reference,ROX,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Post-read Stage/Step,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Pre-read Stage/Step,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Quantification Cycle Method,Ct,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Signal Smoothing On,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Stage/ Cycle where Ct Analysis is performed,"Stage2, Step2",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+User Name,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Well,Well Position,Omit,Sample Name,Target Name,Task,Reporter,Quencher,CT,Ct Mean,Ct SD,Quantity,Quantity Mean,Quantity SD,Y-Intercept,R(superscript 2),Slope,Efficiency,Automatic Ct Threshold,Ct Threshold,Automatic Baseline,Baseline Start,Baseline End,Amp Status,Comments,Cq Conf,THOLDFAIL,CQCONF,HIGHSD,AMPNC,EXPFAIL,NOAMP,PRFLOW,NOISE,mAMP
+1,A1,FALSE,CT0931,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+1,A1,FALSE,CT0931,Te_mar,UNKNOWN,NED,NFQ-MGB,38.555,38.091,0.481,35.447,47.391,13.055,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,33,Amp,,0.871,Y,N,N,N,N,N,N,N,AMP
+1,A1,FALSE,CT0931,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,33,No Amp,,0,N,Y,N,N,N,N,N,N,NOAMP
+2,A2,FALSE,CT0931,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+2,A2,FALSE,CT0931,Te_mar,UNKNOWN,NED,NFQ-MGB,37.595,38.091,0.481,61.328,47.391,13.055,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,33,Amp,,0.898,Y,N,N,N,N,N,N,N,AMP
+2,A2,FALSE,CT0931,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+3,A3,FALSE,CT0931,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+3,A3,FALSE,CT0931,Te_mar,UNKNOWN,NED,NFQ-MGB,38.122,38.091,0.481,45.398,47.391,13.055,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,33,Amp,,0.802,Y,N,N,N,N,N,N,N,AMP
+3,A3,FALSE,CT0931,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+12,A12,FALSE,1E+06,Te_fin,STANDARD,VIC,NFQ-MGB,20.184,20.184,,"1,000,000.00",,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,15,Amp,,0.974,N,N,N,N,N,N,N,N,
+12,A12,FALSE,1E+06,Te_mar,STANDARD,NED,NFQ-MGB,20.254,20.254,,"1,000,000.00",,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,17,Amp,,0.885,Y,N,N,N,N,N,N,N,
+12,A12,FALSE,1E+06,sasa,STANDARD,FAM,NFQ-MGB,16.015,16.015,,"1,000,000.00",,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,12,Amp,,0.961,N,N,N,N,N,N,N,N,
+13,B1,FALSE,CT0804,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+13,B1,FALSE,CT0804,Te_mar,UNKNOWN,NED,NFQ-MGB,37.844,38.164,0.28,53.197,44.696,7.424,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,32,Amp,,0.885,Y,N,N,N,N,N,N,N,AMP
+13,B1,FALSE,CT0804,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,32,No Amp,,0,N,Y,N,N,N,N,N,N,NOAMP
+14,B2,FALSE,CT0804,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+14,B2,FALSE,CT0804,Te_mar,UNKNOWN,NED,NFQ-MGB,38.283,38.164,0.28,41.401,44.696,7.424,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,33,Amp,,0.79,Y,Y,N,N,N,N,N,N,AMP
+14,B2,FALSE,CT0804,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,33,No Amp,,0,N,Y,N,N,N,N,N,N,NOAMP
+15,B3,FALSE,CT0804,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,Y,N,N,NOAMP
+15,B3,FALSE,CT0804,Te_mar,UNKNOWN,NED,NFQ-MGB,38.366,38.164,0.28,39.491,44.696,7.424,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,33,Amp,,0.811,Y,N,N,N,N,N,N,N,AMP
+15,B3,FALSE,CT0804,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,32,No Amp,,0,N,Y,N,N,N,N,N,N,NOAMP
+24,B12,FALSE,4.5E+4,Te_fin,STANDARD,VIC,NFQ-MGB,25.031,25.031,,"45,000.00",,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,20,Amp,,0.944,N,N,N,N,N,N,N,N,
+24,B12,FALSE,4.5E+4,Te_mar,STANDARD,NED,NFQ-MGB,25.019,25.019,,"45,000.00",,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,22,Amp,,0.976,Y,N,N,N,N,N,N,N,
+24,B12,FALSE,4.5E+4,sasa,STANDARD,FAM,NFQ-MGB,19.207,19.207,,"45,000.00",,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,15,Amp,,0.989,N,N,N,N,N,N,N,N,
+25,C1,FALSE,KN1922,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+25,C1,FALSE,KN1922,Te_mar,UNKNOWN,NED,NFQ-MGB,25.877,25.961,0.119,"49,488.62","47,226.63","3,198.93",44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,20,Amp,,0.687,Y,Y,N,N,N,N,N,N,AMP
+25,C1,FALSE,KN1922,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+26,C2,FALSE,KN1922,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+26,C2,FALSE,KN1922,Te_mar,UNKNOWN,NED,NFQ-MGB,Undetermined,25.961,0.119,,,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,44,Amp,,0,Y,Y,N,N,Y,N,N,N,NOAMP
+26,C2,FALSE,KN1922,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+27,C3,FALSE,KN1922,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+27,C3,FALSE,KN1922,Te_mar,UNKNOWN,NED,NFQ-MGB,26.045,25.961,0.119,"44,964.65","47,226.63","3,198.93",44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,19,Amp,,0.643,Y,Y,N,N,N,N,N,N,AMP
+27,C3,FALSE,KN1922,sasa,UNKNOWN,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+36,C12,FALSE,2E+3,Te_fin,STANDARD,VIC,NFQ-MGB,31.571,31.571,,"2,000.00",,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,26,Amp,,0.954,N,N,N,N,N,N,N,N,
+36,C12,FALSE,2E+3,Te_mar,STANDARD,NED,NFQ-MGB,33.065,33.065,,"2,000.00",,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,30,Amp,,0.979,Y,N,N,N,N,N,N,N,
+36,C12,FALSE,2E+3,sasa,STANDARD,FAM,NFQ-MGB,25.721,25.721,,"2,000.00",,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,21,Amp,,0.993,N,N,N,N,N,N,N,N,
+37,D1,FALSE,CL2037,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+37,D1,FALSE,CL2037,Te_mar,UNKNOWN,NED,NFQ-MGB,24.896,24.789,0.408,"86,669.69","93,874.19","22,599.61",44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,17,Amp,,0.749,Y,Y,N,N,N,N,N,N,AMP
+37,D1,FALSE,CL2037,sasa,UNKNOWN,FAM,NFQ-MGB,36.111,37.183,0.982,2.994,1.771,1.082,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,30,Amp,,0.95,N,N,Y,N,N,N,N,N,AMP
+38,D2,FALSE,CL2037,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+38,D2,FALSE,CL2037,Te_mar,UNKNOWN,NED,NFQ-MGB,24.339,24.789,0.408,"119,197.72","93,874.19","22,599.61",44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,17,Amp,,0.695,Y,Y,N,N,N,N,N,N,AMP
+38,D2,FALSE,CL2037,sasa,UNKNOWN,FAM,NFQ-MGB,38.039,37.183,0.982,0.939,1.771,1.082,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,32,Amp,,0.933,N,N,Y,N,N,N,N,N,AMP
+39,D3,FALSE,CL2037,Te_fin,UNKNOWN,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,Y,N,N,Y,N,N,N,NOAMP
+39,D3,FALSE,CL2037,Te_mar,UNKNOWN,NED,NFQ-MGB,25.132,24.789,0.408,"75,755.17","93,874.19","22,599.61",44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,18,Amp,,0.635,Y,Y,N,N,N,N,N,N,AMP
+39,D3,FALSE,CL2037,sasa,UNKNOWN,FAM,NFQ-MGB,37.398,37.183,0.982,1.381,1.771,1.082,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,31,Amp,,0.935,N,N,Y,N,N,N,N,N,AMP
+48,D12,FALSE,1E+2,Te_fin,STANDARD,VIC,NFQ-MGB,Undetermined,,,100,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,28,No Amp,,0,N,Y,N,N,N,N,N,N,
+48,D12,FALSE,1E+2,Te_mar,STANDARD,NED,NFQ-MGB,38.67,38.67,,100,,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,34,Amp,,0.911,Y,N,N,N,N,N,N,N,
+48,D12,FALSE,1E+2,sasa,STANDARD,FAM,NFQ-MGB,27.49,27.49,,100,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,23,Amp,,0.988,N,N,N,N,N,N,N,N,
+60,E12,FALSE,1E+1,Te_fin,STANDARD,VIC,NFQ-MGB,Undetermined,,,10,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,35,No Amp,,0,N,Y,N,N,N,N,N,N,
+60,E12,FALSE,1E+1,Te_mar,STANDARD,NED,NFQ-MGB,38.654,38.654,,10,,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,34,Amp,,0.862,Y,N,N,N,N,N,N,N,
+60,E12,FALSE,1E+1,sasa,STANDARD,FAM,NFQ-MGB,36.363,36.363,,10,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,32,Amp,,0.989,N,N,N,N,N,N,N,N,
+72,F12,FALSE,qPRCBlank,Te_fin,NTC,VIC,NFQ-MGB,Undetermined,,,,,,45.222,0.993,-4.219,72.584,TRUE,0.169,TRUE,3,44,No Amp,,0,N,N,N,Y,N,N,Y,Y,NOAMP
+72,F12,FALSE,qPRCBlank,Te_mar,NTC,NED,NFQ-MGB,20.261,,,,,,44.801,0.956,-4.031,77.04,TRUE,0.04,TRUE,3,13,No Amp,,0,Y,N,N,Y,N,N,Y,Y,NOAMP
+72,F12,FALSE,qPRCBlank,sasa,NTC,FAM,NFQ-MGB,Undetermined,,,,,,37.934,0.94,-3.826,82.536,TRUE,0.12,TRUE,3,44,No Amp,,0,N,N,N,Y,N,N,Y,Y,NOAMP
