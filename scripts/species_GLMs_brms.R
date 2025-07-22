@@ -1,3 +1,10 @@
+####Analysis of Clio channel and knight inlet data collected summer 2024
+#Written by Jaime Grimm
+#Bayesian regression models using stan. 
+#The goal is to model eDNA concentration between the sites for each species individually 
+#Last updated July 22, 2025
+
+
 library(tidyr)
 library(tidyverse)
 library(brms)
@@ -21,7 +28,7 @@ env.formula <- bf(
 family <- hurdle_gamma()
 
 #Separate datasets by species
-targets <- unique(envdata$Target)
+targets <- unique(envdata$Target) #target = unique species ID
 datasets <- list()
 
 for (j in 1:length(targets)){
@@ -77,32 +84,13 @@ plot[[k]] <- ggplot() +
   annotate("text", x = 2.3, y = max(datasets[[k]]$Conc*100)*0.98, label = label[k])
   }
 
-#Do Tenacibaculum separately, no model fits
-#Temar_site <- ggplot() +  
-#  geom_jitter(data = datasets[[2]], aes(x = Site, y = Conc*100, color = Site), alpha = 0.5) +
-#  xlab(NULL) +
-#  ylab(NULL) +
-#  labs(title = fullnames[2]) +
-#  theme_bw() +
-#  theme(legend.position = "none") +
-#  scale_color_manual(values=c(pal[3], pal[7])) +
-#  annotate("text", x = 2.4, y = max(datasets[[2]]$Conc*100), label = label[2])
-#
-#Tefin_site <- ggplot() +  
-#  geom_jitter(data = datasets[[5]], aes(x = Site, y = Conc*100, color = Site), alpha = 0.5) +
-#  xlab(NULL) +
-#  ylab(NULL) +
-#  labs(title = fullnames[5]) +
-#  theme_bw() +
-#  theme(legend.position = "none") +
-#  scale_color_manual(values=c(pal[3], pal[7]))+
-#  annotate("text", x = 2.4, y = max(datasets[[5]]$Conc*100), label = label[5])
-
 library(grid)
 foo <- ggpubr::ggarrange(plot[[1]], plot[[2]], plot[[3]], plot[[4]], plot[[5]], plot[[6]], plot[[7]], align = "hv")# Temar_site, Tefin_site, align = "hv")
 annotate_figure(foo, left = textGrob("eDNA concentration (copies/μL)", rot = 90, gp = gpar(fontsize =16)), 
                 bottom = textGrob("Area", gp = gpar(fontsize =16)))
 
+
+#Checking out environmental variables' effects----------------------------------
 #Temperaure effects
 #tempplotdata <- list()
 #tempplot <- list()

@@ -1,7 +1,11 @@
 ####Analysis of Clio channel and knight inlet data collected summer 2024#
-#Bayesian regression models using stan. The goal is to model species distributions with species ID as a random effect
+#Bayesian regression models using stan. 
+#The goal is to model species distributions with species ID as a random effect
+#Similar to the glam_brms_clean.R file but here we include environmental effects
+  #as predictors in the model.
+#Ultimately decided to report on the model without environmental variables.
 #Created November 18, 2024
-#Last updated January 6, 2025
+#Last updated July 22, 2025
 
 #Housekeeping ----
 library(tidyr)
