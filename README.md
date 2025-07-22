@@ -1,4 +1,4 @@
-# clio
+# Salmon aquaculture elevates levels of Atlantic salmon eDNA, but not pathogen eDNA across First Nations’ territories
 Analysis of eDNA data collected in Knight inlet and Clio channel, in the Broughton Archipelago, British Columbia, Canada in summer 2024.
 
 Briefly, this study was conceptualized by Brad Puglas, an elected council member of the Mamalilikulla First Nation (MFN). The goal was to determine if the three remaining Atlantic salmon farms operating in the Broughton Archipelago---in an area of joint territorial claims by MFN and Tlowitsis First Nation (TFN)---were contributing elevated salmon pathogens levels to Knight Inlet (sole MFN territory). We predicted that if this were the case, we'd see elevated pathogen eDNA concentrations in the mouth of Clio Channel (nearer the salmon farms) than in Knight Inlet.
