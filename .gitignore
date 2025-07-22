@@ -13,3 +13,8 @@ Thumbs.db
 
 # xls files
 .xls
+./.DS_Store
+./data/.DS_Store
+./figures/.DS_Store
+./figures/heirarchical
+model/.DS_Store
