@@ -24,7 +24,7 @@ library(bayestestR)
 options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 
 #Load and prepare data ----
-source("~/Documents/GitHub/clio/scripts/data_preparation.R")
+source("./scripts/data_preparation.R")
 
 data_nc <- data %>% filter(Site != "Control")
 #Plot data ----
