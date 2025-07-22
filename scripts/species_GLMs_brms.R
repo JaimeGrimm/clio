@@ -10,7 +10,7 @@ library(bayesplot)
 options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 
 #Load data ----
-source("~/Documents/GitHub/clio/scripts/data_preparation.R")
+source("./data_preparation.R")
 
 #Model fitting ----
 #Specify the model formulation
