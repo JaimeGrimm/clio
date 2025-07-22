@@ -12,7 +12,7 @@ Thumbs.db
 .Ruserdata
 
 # xls files
-.xls
+./.xls
 ./.DS_Store
 ./data/.DS_Store
 ./figures/.DS_Store
