@@ -7,7 +7,7 @@ data2 <- read_csv("./data/clio2.csv", skip = 42, show_col_types = FALSE)
 data3 <- read_csv("./data/clio3.csv", skip = 42, show_col_types = FALSE)
 data4 <- read_csv("./data/clio4.csv", skip = 42, show_col_types = FALSE) 
 
-envdata <- read_csv("~/Documents/GitHub/clio/data/rawsamplingdata.csv")
+envdata <- read_csv("./data/rawsamplingdata.csv")
 
 data <- bind_rows(data1, data2, data3, data4) %>%
   # simplify column names:
