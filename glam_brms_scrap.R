@@ -694,3 +694,69 @@ draws.longf %>%
   guides(alpha = "none") +
   scale_y_discrete(labels = c(HU_clio = "Clio channel", HU_knight = "Knight inlet", HU_control ="Control"))
 
+#Manually calculating Species effects ----
+fit_draws <- fit %>% spread_draws(
+  b_Intercept,
+  b_SiteKnight,
+  b_PrevConc,
+  b_hu_Intercept,
+  b_hu_SiteKnight,
+  b_hu_PrevConc,
+  r_Target[Target,Site],
+  r_Target__hu[Target,Site],
+)
+
+fit_draws_clio <- fit_draws %>%
+  filter(Site == "Intercept") %>%
+  mutate(
+    r_Total = r_Target,
+    r_Total__hu = r_Target__hu,
+  )
+
+fit_draws_knight <- fit_draws %>%
+  filter(Site == "SiteKnight") 
+
+fit_draws_knight$r_Total = fit_draws_clio$r_Target + fit_draws_knight$r_Target
+fit_draws_knight$r_Total__hu = fit_draws_clio$r_Target__hu + fit_draws_knight$r_Target__hu
+
+fit_draws <- bind_rows(fit_draws_knight, fit_draws_clio)
+
+fit_draws <- fit_draws %>%
+  mutate(
+    Knight = as.numeric(Site == "SiteKnight"),
+    logmu = b_Intercept + (b_SiteKnight * Knight) + r_Total,
+    mu = exp(logmu),
+    logithu = b_hu_Intercept + (b_hu_SiteKnight * Knight) + r_Total__hu,
+    hu = plogis(logithu),
+    su = 1 - hu
+  )
+
+#Species posterior plots  ----
+#Just mu
+fit_draws %>% ggplot(aes(x=mu, color=Target, linetype=Site)) +
+  geom_density() +
+  scale_x_log10() +
+  labs(x = "Expected DNA conc.", y = "Density") + theme_bw() + theme(legend.position = "bottom")
+
+# hurdle parameter has way too much freedom, which leads to these silly posteriors:
+fit_draws %>% ggplot(aes(x=hu, color=Target, linetype=Site)) +
+  geom_density() +
+  #scale_x_log10() +
+  scale_y_log10() +
+  coord_cartesian(ylim=c(1e-1, 1e+3)) +
+  labs(x = "Hurdle (zero-inflation) probability", y = "Density") + theme_bw() + theme(legend.position = "bottom")
+
+#Just mu - percent change species effects
+# mu_cl = exp(b_intercept + r_target[intercept])
+# mu_kn = exp(mu_cl + b_siteknight + r_target[knight])
+# 100 * (mu_cl / mu_kn - 1) = 100/exp(b_siteknight + r_target) - 100
+
+ggplot(data = fit_draws_knight) +
+  geom_density(aes(x=1 / exp(b_SiteKnight + r_Target), color=Target),
+               size = 0.4) +
+  geom_density(aes(x=1 / exp(b_SiteKnight + r_Target)), size = 1) +
+  xlim(0, 5) +
+  #coord_cartesian(xlim=c(0, 500)) +
+  labs(x = "Ratio of expected DNA concentration at Clio vs. Knight", y = "Density") + theme_bw() + theme(legend.position = "bottom")
+
+
