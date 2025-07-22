@@ -6,6 +6,7 @@ library(scales)
 library(ggtext)
 library(repr)
 library(marginaleffects)
+library(bayesplot)
 options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 
 #Load data ----
@@ -38,19 +39,24 @@ for (i in 1:length(datasets)){
     silent = 0
   )
 }
+names(fits) <- targets
 
 #Check summary and posterior predictive one by one. Generally they look good, except for the Tenacibaculum spp 
 #which is unsurprising given the data sparsity
-summary(fits[[1]])
+summary(fits[[3]])
 
 pp_check(fits[[7]], ndraws = 20) + scale_x_continuous(trans = "log1p") + theme_bw()
 
 
 #Site effect plots ----
 library(ggpubr)
-fullnames <- c("Atlantic salmon", "Tenacibaculum maritimum", "Piscirickettsia salmonis", "Erythrocytic necrosis virus",
-               "Tenacibaculum finnmarkense", "Candidatus Syngnamydia salmonis", "Paranucleospora theridion")
-  
+library(PNWColors)
+pal <- pnw_palette("Starfish")
+targets
+fullnames <- c("Atlantic salmon", "Tenacibaculum maritimum", "Paranucleospora theridion", "Tenacibaculum finnmarkense",
+               "Candidatus Syngnamydia salmonis", "Piscirickettsia salmonis", "Erythrocytic necrosis virus")
+label <- c("n = 72", "n = 72", "n = 69", "n = 72", "n = 72", "n = 72", "n = 72")
+
 plotdata <- list()
 plot <- list()
 
@@ -59,35 +65,42 @@ plotdata[[k]] <-
   plot(conditional_effects(fits[[k]], "Site"), plot=FALSE, re_formula=NULL)[[1]]$data
 
 plot[[k]] <- ggplot() +
-  geom_jitter(data = datasets[[k]], aes(x = Site, y = Conc*100, color = Site)) +
+  geom_jitter(data = datasets[[k]], aes(x = Site, y = Conc*100, color = Site), alpha = 0.5) +
   geom_point(data = plotdata[[k]], aes(x = effect1__, y = estimate__*100)) +
   geom_errorbar(data = plotdata[[k]], aes(x = effect1__, ymin = lower__*100, ymax = upper__*100)) +
   xlab(NULL) +
   ylab(NULL) +
   labs(title = fullnames[k]) +
   theme_bw() +
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  scale_color_manual(values=c(pal[3], pal[7])) +
+  annotate("text", x = 2.3, y = max(datasets[[k]]$Conc*100)*0.98, label = label[k])
   }
 
 #Do Tenacibaculum separately, no model fits
-Temar_site <- ggplot() +  
-  geom_jitter(data = datasets[[2]], aes(x = Site, y = Conc*100, color = Site)) +
-  xlab(NULL) +
-  ylab(NULL) +
-  labs(title = fullnames[2]) +
-  theme_bw() +
-  theme(legend.position = "none")
+#Temar_site <- ggplot() +  
+#  geom_jitter(data = datasets[[2]], aes(x = Site, y = Conc*100, color = Site), alpha = 0.5) +
+#  xlab(NULL) +
+#  ylab(NULL) +
+#  labs(title = fullnames[2]) +
+#  theme_bw() +
+#  theme(legend.position = "none") +
+#  scale_color_manual(values=c(pal[3], pal[7])) +
+#  annotate("text", x = 2.4, y = max(datasets[[2]]$Conc*100), label = label[2])
+#
+#Tefin_site <- ggplot() +  
+#  geom_jitter(data = datasets[[5]], aes(x = Site, y = Conc*100, color = Site), alpha = 0.5) +
+#  xlab(NULL) +
+#  ylab(NULL) +
+#  labs(title = fullnames[5]) +
+#  theme_bw() +
+#  theme(legend.position = "none") +
+#  scale_color_manual(values=c(pal[3], pal[7]))+
+#  annotate("text", x = 2.4, y = max(datasets[[5]]$Conc*100), label = label[5])
 
-Tefin_site <- ggplot() +  
-  geom_jitter(data = datasets[[5]], aes(x = Site, y = Conc*100, color = Site)) +
-  xlab(NULL) +
-  ylab(NULL) +
-  labs(title = fullnames[5]) +
-  theme_bw() +
-  theme(legend.position = "none")
-  
-site_plot <- ggarrange(plot[[1]], plot[[3]], plot[[4]], plot[[6]], plot[[7]], Temar_site, Tefin_site, align="hv")
-annotate_figure(site_plot, left = textGrob("Expected eDNA \n concentration (copies/μL)", rot = 90, gp = gpar(fontsize =16)), 
+library(grid)
+foo <- ggpubr::ggarrange(plot[[1]], plot[[2]], plot[[3]], plot[[4]], plot[[5]], plot[[6]], plot[[7]], align = "hv")# Temar_site, Tefin_site, align = "hv")
+annotate_figure(foo, left = textGrob("eDNA concentration (copies/μL)", rot = 90, gp = gpar(fontsize =16)), 
                 bottom = textGrob("Area", gp = gpar(fontsize =16)))
 
 #Temperaure effects
