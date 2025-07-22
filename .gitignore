@@ -10,3 +10,6 @@ Thumbs.db
 .Rhistory
 .RData
 .Ruserdata
+
+# xls files
+.xls
