@@ -29,17 +29,15 @@ options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 #Load and prepare data ----
 source("./scripts/data_preparation.R")
 
-data_nc <- data %>% filter(Site != "Control") #remove controls
-
 #Plot data ----
 #Histograms by species
-data_nc %>% ggplot(aes(x=Conc*100, fill = Target))+
+data %>% ggplot(aes(x=Conc*100, fill = Target))+
   geom_histogram(bins = 10) +
   facet_grid(Site ~ Target, scales = "free") +
   theme_bw() + theme(legend.position = "none")
 
 #Boxplots by species
-data_nc %>% ggplot(aes(x=Target, y=Conc*100))+
+data %>% ggplot(aes(x=Target, y=Conc*100))+
   geom_half_point(aes(color=Target), side="l", alpha = 0.2,
                   transformation = PositionIdentity)+
   geom_half_boxplot(aes(fill=Target), side="r")+
@@ -54,7 +52,7 @@ data_nc %>% ggplot(aes(x=Target, y=Conc*100))+
 
 
 #Model fitting ----
-data_nc$Site <- relevel(factor(data_nc$Site), "Knight") #Make Knight the baseline
+data$Site <- relevel(factor(data$Site), "Knight") #Make Knight the baseline
 
 formula <- bf(
     Conc ~ Site + PrevConc + (1 + Site | Target) + (1|Sample),
@@ -64,11 +62,11 @@ formula <- bf(
 family <- hurdle_gamma()
 
 # what's the default prior look like?
-#default_prior(formula, data = data_nc, family = family)
+default_prior(formula, data = data, family = family)
 # -
 
 fit1 <- brm(
-    formula, data = data_nc, family = family,
+    formula, data = data, family = family,
     chains = 6, iter = 4000, warmup = 2000, seed = 1,
     core = 6, control = list(max_treedepth = 10, adapt_delta = 0.9),
     prior = c(set_prior("normal(0, 100)", class = "b")),  # add a wide prior to the coefficients
@@ -151,16 +149,16 @@ drawsf <- spread_draws(fit1,
   b_hu_PrevConc)
 
 #Keep it simple for global means/hu.
-drawsf$B_clio <- exp(drawsf$b_Intercept) * (1 - plogis(drawsf$b_hu_Intercept))
-drawsf$B_knight <- exp(drawsf$b_Intercept + drawsf$b_SiteKnight) * (1 - plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
+drawsf$B_knight <- exp(drawsf$b_Intercept) * (1 - plogis(drawsf$b_hu_Intercept))
+drawsf$B_clio <- exp(drawsf$b_Intercept + drawsf$b_SiteClio) * (1 - plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteClio))
 
 #Ratio clio/knight full model
 drawsf$ratio <- drawsf$B_clio/drawsf$B_knight
 
 #Hurdle posteriors
 #drawsf$HU_control <- (plogis(drawsf$b_hu_Intercept))
-drawsf$HU_clio <- (plogis(drawsf$b_hu_Intercept))
-drawsf$HU_knight <- (plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteKnight))
+drawsf$HU_knight <- (plogis(drawsf$b_hu_Intercept))
+drawsf$HU_clio <- (plogis(drawsf$b_hu_Intercept + drawsf$b_hu_SiteClio))
 drawsf$HU_ratio <- drawsf$HU_clio/drawsf$HU_knight
 
 #drawsf <- drawsf %>% filter(B_knight != 0)
@@ -214,22 +212,26 @@ draws.longf %>%
 # mu and hu species effects
 newdata1 <- expand_grid(
   Site = c("Clio", "Knight"),
-  Target = sort(unique(data_nc$Target)),
+  Target = sort(unique(data$Target)),
   PrevConc = 0,
-  Sample = unique(data_nc$Sample)
+  Sample = unique(data$Sample)
 )
 epred1 <- epred_draws(fit1, newdata=newdata1)
 
 epred1.long <- epred1 %>% pivot_wider(id_cols = c(Target, .draw, Sample), names_from = Site, values_from = .epred) %>% 
         mutate(ratio = Clio/Knight) %>% 
-        mutate(fullname = case_when(Target == "Te_mar" ~ "T. maritimum", 
-                                    Target == "Te_fin" ~ "T. finnmarkense", 
-                                    Target == "sch" ~ "Cand. S. salmonis",
+        mutate(fullname = case_when(Target == "Te_mar" ~ "*T. maritimum*", 
+                                    Target == "Te_fin" ~ "*T. finnmarkense*", 
+                                    Target == "sch" ~ "*Cand.* S. salmonis",
                                     Target == "sasa" ~ "Atlantic salmon", 
-                                    Target == "pisck_sal" ~ "P. salmonis", 
-                                    Target == "pa_ther" ~ "P. theridion",
+                                    Target == "pisck_sal" ~ "*P. salmonis*", 
+                                    Target == "pa_ther" ~ "*P. theridion*",
                                     Target == "env" ~ "ENV")
         )
+
+epred1.long <- transform(epred1.long, fullname = as.character(fullname))
+epred1.long$fullname <- with(epred1.long, ifelse(Target == "Sasa_COI", "Atlantic salmon", 
+                                        paste0("*", fullname, "*")))
 #Calculate how much more Atlantic salmon DNA there is in Clio than Knight
 #We have to deal with long tails on the posteriors making it difficult to visualize
 #Lets plot the 95% CI of the posterior rather than the full posterior
@@ -254,18 +256,24 @@ foo <- epred1.long %>% filter(case_when(Target == "env" ~ between(ratio, 0.48, 2
                                         Target == "Te_mar" ~ between(ratio, 0, 3.69)
                                           ))
 
+library(ggsci)
+pal <- c("#855C75","#D9AF6B","#AF6458","#526A83",
+         "#625377","#68855C","#9C9C5E","#A06177",
+         "#467378","#7C7C7C")
 ggplot(data = foo) +
   #stat_halfeye(aes(x = ratio, color = fullname)) +
   geom_density(aes(x= ratio, color=fullname), size = 0.75, trim = FALSE) +
   #geom_density(aes(x=ratio), size = 0.5, linetype = 2, trim = FALSE) +
-  #xlim(-1, 15) +
+  xlim(-1, 15) +
   #ylim(0, 1.6) +
   #labs(x = NULL, y = NULL, title = "Without environmental variables") +
   labs(x = "Ratio of expected DNA concentration at \n Clio vs. Knight", y = "Density") + 
   theme_bw() + 
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom", 
+        legend.text = element_markdown()) +
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   labs(color = "Target species")+
-  geom_vline(xintercept=1, linetype = 2)
+  geom_vline(xintercept=1, linetype = 2)+
+  scale_color_jco() 
   

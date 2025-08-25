@@ -9,7 +9,7 @@ data4 <- read_csv("./data/clio4.csv", skip = 42, show_col_types = FALSE)
 
 envdata <- read_csv("./data/rawsamplingdata.csv")
 
-data <- bind_rows(data1, data2, data3, data4) %>%
+data <- bind_rows(data1, data2, data3) %>% #, data4) %>%
   # simplify column names:
   rename(Target = `Target Name`, Sample = `Sample Name`, Amp = `Amp Status`, well = 'Well Position') %>%
   # add `Site` column:
@@ -36,12 +36,12 @@ data <- bind_rows(data1, data2, data3, data4) %>%
   mutate(Sequence = if_else(Sequence < 9, Sequence, Sequence + 2)) %>%
   # grab only the columns we need:
   dplyr::select(Sample, Sequence, Site, Target, Quantity, Amp, well, CT, mAMP) %>% 
-  mutate(fullname = case_when(Target == "Te_mar" ~ "T. maritimum", 
-                              Target == "Te_fin" ~ "T. finnmarkense", 
-                              Target == "sch" ~ "Cand. S. salmonis",
+  mutate(fullname = case_when(Target == "Te_mar" ~ "*T. maritimum*", 
+                              Target == "Te_fin" ~ "*T. finnmarkense*", 
+                              Target == "sch" ~ "*Cand.* S. salmonis",
                               Target == "sasa" ~ "Atlantic salmon", 
-                              Target == "pisck_sal" ~ "P. salmonis", 
-                              Target == "pa_ther" ~ "P. theridion",
+                              Target == "pisck_sal" ~ "*P. salmonis*", 
+                              Target == "pa_ther" ~ "*P. theridion*",
                               Target == "env" ~ "ENV"))
 data$Sample[data$Sample =="CT0804"] <- "CT0884"
 
@@ -98,21 +98,21 @@ envdata_nc <- envdata %>%
   mutate(Conc = Conc / 100, PrevConc = PrevConc / 100) # scale for easier sampling
 
 #Look at contamination in controls ----
-library(PNWColors)
-pal <- pnw_palette("Starfish")
-
+#library(PNWColors)
+#pal <- pnw_palette("Starfish")
+#
 controls <- bind_rows(data1, data2, data3, data4) %>% 
   rename(Target = `Target Name`, Sample = `Sample Name`, Amp = `Amp Status`) %>%
   mutate(Site = case_when(
     str_detect(Sample, "CL")~"Clio",
     str_detect(Sample, "KN")~"Knight",
     TRUE~'Control')) %>% 
-  mutate(fullname = case_when(Target == "Te_mar" ~ "T. maritimum", 
-                              Target == "Te_fin" ~ "T. finnmarkense", 
-                              Target == "sch" ~ "Cand. S. salmonis",
+  mutate(fullname = case_when(Target == "Te_mar" ~ "*T. maritimum*", 
+                              Target == "Te_fin" ~ "*T. finnmarkense*", 
+                              Target == "sch" ~ "*Cand.* S. salmonis",
                               Target == "sasa" ~ "Atlantic salmon", 
-                              Target == "pisck_sal" ~ "P. salmonis", 
-                              Target == "pa_ther" ~ "P. theridion",
+                              Target == "pisck_sal" ~ "*P. salmonis*", 
+                              Target == "pa_ther" ~ "*P. theridion*",
                               Target == "env" ~ "ENV")) %>% 
   filter(Target != "ascv", Target != "ctv-2", mAMP != "ATYPICAL")
 controls$Conc <- if_else(is.na(controls$Quantity), 0, controls$Quantity)
@@ -123,20 +123,41 @@ controls$Sample[controls$Sample =="CT0804"] <- "CT0884"
     
 cont.only<- controls %>% filter(Site != "Clio", Site != "Knight", #Amp == "Amp",
                                Task != "STANDARD", Sample != "Messedup") 
-temp <- data %>% filter(fullname == "Atlantic salmon" | fullname == "Cand. S. salmonis" | fullname == "P. salmonis" | 
-                        fullname == "P. theridion")
+
+#library(ggbreak)
+# Define a palette (from ggsci::pal_jco)
+jco_cols <- ggsci::pal_jco("default")(7)
+
 ggplot()+
-  geom_jitter(data = data, aes(y = Conc, x = fullname), color = "grey70", alpha=0.3, width = 0.3, size = 2.5) +
-  geom_point(data = cont.only, aes(y=Conc, x = fullname, color = Sample), position = position_jitter(seed = 2, width = 0.2, height = 0), size = 3.5) +
+  geom_jitter(data = data, aes(y = Conc, x = fullname), 
+              color = "grey70", alpha=0.3, width = 0.3, size = 2.5) +
+  geom_point(data = cont.only, aes(y=Conc, x = fullname, color = Sample), 
+             alpha = 0.7, position = position_jitter(seed = 2, width = 0.2, height = 0), 
+             size = 3.5) +
   ylab("eDNA concentration (copies/μL)") +
   xlab("Target") +
   scale_y_continuous(trans="sqrt") +
   theme_bw(base_size = 18)+
-  theme(axis.text.x = element_text(angle = 45, vjust =0.6),
+  theme(axis.text.x = element_markdown(angle = 45, vjust =0.6),
         axis.line.y.right = element_blank()) +
-  scale_color_discrete(labels = c("CT0884" = "Start-of-day 1", "CT0837" = "End-of-day 1", "CT0931" = "Start-of-day 2",
-                                  "CT0917" = "End-of-day 2", "EB0108" = "Extraction blank 1", "EB0108.1" = "Extraction blank 2", 
-                                 "qPCRBlank" = "qPRC blank")) +
+  scale_color_manual(
+    name = NULL,
+    values = c("CT0884" = jco_cols[1],   # Start-of-day 1
+               "CT0931" = jco_cols[2],   # Start-of-day 2
+               "CT0837" = jco_cols[3],   # End-of-day 1
+               "CT0917" = jco_cols[4],   # End-of-day 2
+               "EB0108" = jco_cols[5],   # Extraction blank 1
+               "EB0108.1" = jco_cols[6], # Extraction blank 2
+               "qPCRBlank" = jco_cols[7] # qPCR blank
+    ),
+    labels = c("CT0884"   = "Start-of-day 1", 
+               "CT0931"   = "Start-of-day 2",
+               "CT0837"   = "End-of-day 1", 
+               "CT0917"   = "End-of-day 2", 
+               "EB0108"   = "Extraction blank 1", 
+               "EB0108.1" = "Extraction blank 2", 
+               "qPCRBlank"= "qPRC blank"),
+    breaks = c("CT0884", "CT0931", "CT0837", "CT0917", 
+               "EB0108", "EB0108.1", "qPCRBlank")  # <-- controls order
+  ) +
   scale_y_break(breaks = c(2000, 30000), scales = 0.35, expand = TRUE)
-  #scale_color_manual(values = pal)
-

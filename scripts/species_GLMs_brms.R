@@ -17,7 +17,7 @@ library(bayesplot)
 options(repr.plot.width=12, repr.plot.height=8, repr.plot.dpi=300)
 
 #Load data ----
-source("./data_preparation.R")
+source("./scripts/data_preparation.R")
 
 #Model fitting ----
 #Specify the model formulation
@@ -60,8 +60,8 @@ library(ggpubr)
 library(PNWColors)
 pal <- pnw_palette("Starfish")
 targets
-fullnames <- c("Atlantic salmon", "Tenacibaculum maritimum", "Paranucleospora theridion", "Tenacibaculum finnmarkense",
-               "Candidatus Syngnamydia salmonis", "Piscirickettsia salmonis", "Erythrocytic necrosis virus")
+fullnames <- c("Atlantic salmon", "*T. maritimum*", "*P. theridion*", "*T. finnmarkense*",
+               "*Cand.* S. salmonis", "*P. salmonis*", "Erythrocytic necrosis virus")
 label <- c("n = 72", "n = 72", "n = 69", "n = 72", "n = 72", "n = 72", "n = 72")
 
 plotdata <- list()
@@ -79,12 +79,13 @@ plot[[k]] <- ggplot() +
   ylab(NULL) +
   labs(title = fullnames[k]) +
   theme_bw() +
-  theme(legend.position = "none")+
-  scale_color_manual(values=c(pal[3], pal[7])) +
-  annotate("text", x = 2.3, y = max(datasets[[k]]$Conc*100)*0.98, label = label[k])
+  theme(legend.position = "none", plot.title = element_markdown())+
+  #scale_color_manual(values=c(pal[3], pal[7])) +
+  scale_color_jco()+
+  annotate("text", x = 2.3, y = max(datasets[[k]]$Conc*100)*0.97, label = label[k])
   }
 
-library(grid)
+#library(grid)
 foo <- ggpubr::ggarrange(plot[[1]], plot[[2]], plot[[3]], plot[[4]], plot[[5]], plot[[6]], plot[[7]], align = "hv")# Temar_site, Tefin_site, align = "hv")
 annotate_figure(foo, left = textGrob("eDNA concentration (copies/μL)", rot = 90, gp = gpar(fontsize =16)), 
                 bottom = textGrob("Area", gp = gpar(fontsize =16)))
