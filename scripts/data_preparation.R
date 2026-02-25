@@ -1,15 +1,17 @@
 #Load and prepare data ----
 library(tidyverse)
+library(ggtext)
+library(ggbreak)
 # using readr's read_csv for better typing
 data1 <- read_csv("./data/clio.csv", skip = 42, show_col_types = FALSE) %>% 
   filter(`Sample Name` != "KN1922", `Sample Name` != "CL2037") #These two filters were outliers. Reran in data4 to confirm. Will use data4 amplifications
 data2 <- read_csv("./data/clio2.csv", skip = 42, show_col_types = FALSE)
 data3 <- read_csv("./data/clio3.csv", skip = 42, show_col_types = FALSE)
-data4 <- read_csv("./data/clio4.csv", skip = 42, show_col_types = FALSE) 
+data4 <- read_csv("./data/clio4.csv", skip = 42, show_col_types = FALSE) #To replace removed outliers
 
 envdata <- read_csv("./data/rawsamplingdata.csv")
 
-data <- bind_rows(data1, data2, data3) %>% #, data4) %>%
+data <- bind_rows(data1, data2, data3, data4) %>% 
   # simplify column names:
   rename(Target = `Target Name`, Sample = `Sample Name`, Amp = `Amp Status`, well = 'Well Position') %>%
   # add `Site` column:
@@ -128,18 +130,20 @@ cont.only<- controls %>% filter(Site != "Clio", Site != "Knight", #Amp == "Amp",
 # Define a palette (from ggsci::pal_jco)
 jco_cols <- ggsci::pal_jco("default")(7)
 
-ggplot()+
+plot <- ggplot()+
   geom_jitter(data = data, aes(y = Conc, x = fullname), 
               color = "grey70", alpha=0.3, width = 0.3, size = 2.5) +
   geom_point(data = cont.only, aes(y=Conc, x = fullname, color = Sample), 
              alpha = 0.7, position = position_jitter(seed = 2, width = 0.2, height = 0), 
              size = 3.5) +
+  scale_y_continuous(trans="sqrt") +
   ylab("eDNA concentration (copies/μL)") +
   xlab("Target") +
-  scale_y_continuous(trans="sqrt") +
   theme_bw(base_size = 18)+
   theme(axis.text.x = element_markdown(angle = 45, vjust =0.6),
-        axis.line.y.right = element_blank()) +
+        axis.line.y.right = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank()) +
   scale_color_manual(
     name = NULL,
     values = c("CT0884" = jco_cols[1],   # Start-of-day 1
@@ -159,5 +163,9 @@ ggplot()+
                "qPCRBlank"= "qPRC blank"),
     breaks = c("CT0884", "CT0931", "CT0837", "CT0917", 
                "EB0108", "EB0108.1", "qPCRBlank")  # <-- controls order
-  ) +
-  scale_y_break(breaks = c(2000, 30000), scales = 0.35, expand = TRUE)
+  ) 
+
+plot +
+  scale_y_break(breaks = c(2000, 30000), scales = 0.35, expand = TRUE, ticklabels = NULL) 
+  
+
