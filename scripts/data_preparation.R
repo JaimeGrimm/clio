@@ -53,7 +53,7 @@ data$Sequence[data$Sample=="CT0837"] <- 9 #end of day 1
 data$Sequence[data$Sample=="CT0931"] <- 10 #beginning of day 2
 data$Sequence[data$Sample=="CT0917"] <- 27 #end of day 2
 # -
-data <- data %>% filter(!grepl("CT", Sample))
+#data <- data %>% filter(!grepl("CT", Sample))
 
 # ### adding a `PrevConc` covariate
 #
@@ -85,7 +85,7 @@ for (t in unique(data$Target)) {
   }
 }
 
-data$PrevConc[data$Sequence == 10] <- 0  #decontaminated before start of day 2
+#data$PrevConc[data$Sequence == 10] <- 0  #decontaminated before start of day 2
 
 #Combine with environmental data
 envdata <- envdata %>% rename(Site = region, Sequence = Seq) %>% 
